@@ -1,7 +1,10 @@
+import 'package:chatdem/features/authentication/view_models/authentication_provider.dart';
+import 'package:chatdem/services/firebase_services.dart';
 import 'package:chatdem/shared/Navigation/app_route_strings.dart';
 import 'package:chatdem/shared/Navigation/app_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
 
@@ -20,11 +23,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      onGenerateRoute: AppRouter.onGenerateRoute,
-      navigatorKey: AppRouter.navKey,
-      initialRoute: AppRouteStrings.loginScreen,
+    final firebaseService = FirebaseService();
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+            create: (_) =>
+                AuthenticationProvider(firebaseService: firebaseService)),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        onGenerateRoute: AppRouter.onGenerateRoute,
+        navigatorKey: AppRouter.navKey,
+        initialRoute: firebaseService.auth.currentUser != null
+            ? AppRouteStrings.homeScreen
+            : AppRouteStrings.loginScreen,
+      ),
     );
   }
 }
