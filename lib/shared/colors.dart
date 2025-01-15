@@ -3,5 +3,5 @@ import 'package:flutter/material.dart';
 class AppColors {
   static const black = Colors.black;
   static const white = Colors.white;
-  static const appColor = Colors.pink;
+  static const appColor = Colors.green;
 }
