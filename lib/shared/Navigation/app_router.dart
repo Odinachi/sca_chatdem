@@ -1,5 +1,6 @@
 import 'package:chatdem/features/authentication/views/login_screen.dart';
 import 'package:chatdem/features/authentication/views/register_screen.dart';
+import 'package:chatdem/features/home/views/chat_screen.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../features/home/views/home_screen.dart';
@@ -16,6 +17,8 @@ class AppRouter {
         return CupertinoPageRoute(builder: (_) => const RegisterScreen());
       case AppRouteStrings.homeScreen:
         return CupertinoPageRoute(builder: (_) => const HomeScreen());
+      case AppRouteStrings.chatScreen:
+        return CupertinoPageRoute(builder: (_) => const ChatScreen());
 
       default:
         return CupertinoPageRoute(builder: (_) => const LoginScreen());

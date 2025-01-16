@@ -2,6 +2,7 @@ import 'package:chatdem/features/authentication/view_models/authentication_provi
 import 'package:chatdem/services/firebase_services.dart';
 import 'package:chatdem/shared/Navigation/app_route_strings.dart';
 import 'package:chatdem/shared/Navigation/app_router.dart';
+import 'package:chatdem/shared/colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -34,6 +35,10 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         onGenerateRoute: AppRouter.onGenerateRoute,
         navigatorKey: AppRouter.navKey,
+        theme: ThemeData(
+            appBarTheme: const AppBarTheme(
+          iconTheme: IconThemeData(color: AppColors.white),
+        )),
         initialRoute: firebaseService.auth.currentUser != null
             ? AppRouteStrings.homeScreen
             : AppRouteStrings.loginScreen,
