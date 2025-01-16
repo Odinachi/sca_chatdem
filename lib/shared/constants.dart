@@ -53,11 +53,7 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return loading
-        ? const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.appColor),
-            ),
-          )
+        ? loaderWidget()
         : InkWell(
             onTap: action,
             child: Container(
@@ -195,3 +191,9 @@ Future<File?> pickImage(bool isCamera) async {
     return null;
   }
 }
+
+Widget loaderWidget() => const Center(
+      child: CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(AppColors.appColor),
+      ),
+    );

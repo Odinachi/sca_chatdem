@@ -13,6 +13,8 @@ class ChatProvider extends ChangeNotifier {
 
   bool isLoading = false;
 
+  List<ChatModel> rooms = [];
+
   void setChatImg(File img) {
     chatImg = img;
     notifyListeners();
@@ -32,5 +34,16 @@ class ChatProvider extends ChangeNotifier {
       notifyListeners();
       return (model: null, error: createChat.error);
     }
+  }
+
+  void fetchRooms() async {
+    isLoading = true;
+    notifyListeners();
+    final chatRooms = await firebaseService.getChatRooms();
+    if (chatRooms != null) {
+      rooms = List.from(chatRooms);
+    }
+    isLoading = false;
+    notifyListeners();
   }
 }

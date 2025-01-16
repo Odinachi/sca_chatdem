@@ -1,7 +1,9 @@
 import 'package:chatdem/features/authentication/view_models/authentication_provider.dart';
+import 'package:chatdem/features/home/view_models/chat_provider.dart';
 import 'package:chatdem/shared/Navigation/app_route_strings.dart';
 import 'package:chatdem/shared/Navigation/app_router.dart';
 import 'package:chatdem/shared/colors.dart';
+import 'package:chatdem/shared/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,59 +16,84 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    context.read<ChatProvider>().fetchRooms();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print(DateTime.now().toIso8601String());
     return Consumer<AuthenticationProvider>(
       builder: (BuildContext context, AuthenticationProvider authProvider,
           Widget? child) {
-        return Scaffold(
-          appBar: AppBar(
-            elevation: 0,
-            backgroundColor: AppColors.appColor,
-            automaticallyImplyLeading: false,
-            title: Text(
-              'Chats',
-              style: TextStyle(color: Colors.white),
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.search, color: Colors.white),
-                onPressed: () {
-                  // Search functionality
-                },
+        return Consumer<ChatProvider>(
+          builder:
+              (BuildContext context, ChatProvider chatProvider, Widget? child) {
+            return Scaffold(
+              appBar: AppBar(
+                elevation: 0,
+                backgroundColor: AppColors.appColor,
+                automaticallyImplyLeading: false,
+                title: Text(
+                  'Chats',
+                  style: TextStyle(color: Colors.white),
+                ),
+                actions: [
+                  IconButton(
+                    icon: Icon(Icons.search, color: Colors.white),
+                    onPressed: () {
+                      // Search functionality
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.exit_to_app, color: Colors.white),
+                    onPressed: () {
+                      authProvider.logout().then((_) =>
+                          AppRouter.pushAndClear(AppRouteStrings.loginScreen));
+                    },
+                  ),
+                ],
               ),
-              IconButton(
-                icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                onPressed: () {
-                  authProvider.logout().then((_) =>
-                      AppRouter.pushAndClear(AppRouteStrings.loginScreen));
+              body: RefreshIndicator(
+                onRefresh: () async {
+                  chatProvider.fetchRooms();
                 },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: chatProvider.isLoading
+                      ? loaderWidget()
+                      : chatProvider.rooms.isEmpty
+                          ? const Center(
+                              child: Text("Chat is Empty"),
+                            )
+                          : ListView.builder(
+                              itemCount: chatProvider.rooms.length,
+                              itemBuilder: (context, index) {
+                                final each = chatProvider.rooms[index];
+                                return ChatTile(
+                                  onTap: () {
+                                    AppRouter.push(AppRouteStrings.chatScreen);
+                                  },
+                                  name: each.chatName ?? "",
+                                  message: 'Hello! How are you doing?',
+                                  time: '12:${10 + index} PM',
+                                  avatarUrl: each.img ?? "",
+                                );
+                              },
+                            ),
+                ),
               ),
-            ],
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ListView.builder(
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return ChatTile(
-                  onTap: () {
-                    AppRouter.push(AppRouteStrings.chatScreen);
-                  },
-                  name: 'User ${index + 1}',
-                  message: 'Hello! How are you doing?',
-                  time: '12:${10 + index} PM',
-                  avatarUrl: 'https://via.placeholder.com/150',
-                );
-              },
-            ),
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              AppRouter.push(AppRouteStrings.createChatScreen);
-            },
-            backgroundColor: AppColors.appColor,
-            child: Icon(Icons.chat, color: Colors.white),
-          ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () async {
+                  await AppRouter.push(AppRouteStrings.createChatScreen)
+                      .then((_) => chatProvider.fetchRooms());
+                },
+                backgroundColor: AppColors.appColor,
+                child: const Icon(Icons.chat, color: Colors.white),
+              ),
+            );
+          },
         );
       },
     );

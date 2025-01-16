@@ -80,13 +80,25 @@ class FirebaseService {
   Future<({ChatModel? model, String? error})> createChatModel(
       ChatModel model) async {
     try {
-      model =
-          model.copyWith(id: DateTime.now().microsecondsSinceEpoch.toString());
+      model = model.copyWith(
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
+          time: DateTime.now());
 
       await fireStore.collection("chats").doc(model.id).set(model.toJson());
       return (model: model, error: null);
     } catch (e) {
       return (model: null, error: e.toString());
+    }
+  }
+
+  Future<List<ChatModel>?> getChatRooms() async {
+    try {
+      final getAllRooms = await fireStore.collection("chats").get();
+
+      return List<ChatModel>.from(
+          getAllRooms.docs.map((e) => ChatModel.fromJson(e.data())));
+    } catch (_) {
+      return [];
     }
   }
 }

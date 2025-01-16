@@ -33,8 +33,8 @@ class AppRouter {
     }
   }
 
-  static void push(String name, {Object? arg}) {
-    navKey.currentState?.pushNamed(name, arguments: arg);
+  static Future<void> push(String name, {Object? arg}) async {
+    await navKey.currentState?.pushNamed(name, arguments: arg);
   }
 
   static void pushReplace(String name, {Object? arg}) {
