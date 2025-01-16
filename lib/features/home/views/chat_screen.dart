@@ -1,3 +1,4 @@
+import 'package:chatdem/shared/colors.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatelessWidget {
@@ -9,7 +10,7 @@ class ChatScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal,
+        backgroundColor: AppColors.appColor,
         title: const Row(
           children: [
             CircleAvatar(
@@ -84,7 +85,7 @@ class ChatScreen extends StatelessWidget {
                   //   },
                   // ),
                   IconButton(
-                    icon: const Icon(Icons.send, color: Colors.teal),
+                    icon: const Icon(Icons.send, color: AppColors.appColor),
                     onPressed: () {
                       // Send message functionality
                     },
@@ -120,7 +121,7 @@ class ChatBubble extends StatelessWidget {
         constraints:
             BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
         decoration: BoxDecoration(
-          color: isMe ? Colors.teal : Colors.grey[200],
+          color: isMe ? AppColors.appColor : Colors.grey[200],
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(12),
             topRight: const Radius.circular(12),

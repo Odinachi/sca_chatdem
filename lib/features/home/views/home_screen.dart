@@ -1,5 +1,6 @@
 import 'package:chatdem/shared/Navigation/app_route_strings.dart';
 import 'package:chatdem/shared/Navigation/app_router.dart';
+import 'package:chatdem/shared/colors.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -15,7 +16,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.teal,
+        backgroundColor: AppColors.appColor,
+        automaticallyImplyLeading: false,
         title: Text(
           'Chats',
           style: TextStyle(color: Colors.white),
@@ -26,6 +28,10 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               // Search functionality
             },
+          ),
+          IconButton(
+            icon: Icon(Icons.exit_to_app, color: Colors.white),
+            onPressed: () {},
           ),
         ],
       ),
@@ -50,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () {
           // Navigate to New Chat Screen
         },
-        backgroundColor: Colors.teal,
+        backgroundColor: AppColors.appColor,
         child: Icon(Icons.chat, color: Colors.white),
       ),
     );
