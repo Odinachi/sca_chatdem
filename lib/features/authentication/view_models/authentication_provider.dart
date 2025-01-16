@@ -39,11 +39,17 @@ class AuthenticationProvider extends ChangeNotifier {
   }
 
   Future<({bool? registered, String? error})> register(
-      {required String email, required String password}) async {
+      {required String email,
+      required String password,
+      required String name}) async {
     loading = true;
     notifyListeners();
-    final login =
-        await firebaseService.register(email: email, password: password);
+    final login = await firebaseService.register(
+      name: name,
+      email: email,
+      password: password,
+      img: profileImage!,
+    );
     if (login.registered ?? false) {
       loading = false;
       notifyListeners();

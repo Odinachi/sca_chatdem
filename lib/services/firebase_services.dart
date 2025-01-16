@@ -1,7 +1,17 @@
+import 'dart:io';
+import 'dart:math';
+
+import 'package:chatdem/features/home/models/user_model.dart';
+import 'package:chatdem/shared/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' as p;
 
 class FirebaseService {
   final auth = FirebaseAuth.instance;
+  final storage = FirebaseStorage.instance;
+  final fireStore = FirebaseFirestore.instance;
 
   Future<({bool? loggedIn, String? error})> login(
       {required String email, required String password}) async {
@@ -17,12 +27,23 @@ class FirebaseService {
   }
 
   Future<({bool? registered, String? error})> register(
-      {required String email, required String password}) async {
+      {required String email,
+      required String password,
+      required String name,
+      required File img}) async {
     try {
       await auth.createUserWithEmailAndPassword(
           email: email, password: password);
 
       await auth.currentUser?.reload();
+
+      await fireStore.collection("user").doc(auth.currentUser?.uid).set(
+            UserModel(
+                    uid: auth.currentUser?.uid,
+                    name: name,
+                    img: imgs[Random().nextInt(imgs.length)])
+                .toJson(),
+          );
 
       return (registered: true, error: null);
     } on FirebaseAuthException catch (e) {
@@ -36,5 +57,22 @@ class FirebaseService {
     try {
       await auth.signOut();
     } catch (_) {}
+  }
+
+  Future<String?> uploadImg(File img) async {
+    try {
+      final storageRef = storage.ref();
+
+      final imgRef = storageRef.child(
+          "${auth.currentUser?.uid}/${DateTime.now().millisecondsSinceEpoch}${p.extension(img.path)}");
+
+      final upload = await imgRef.putFile(img);
+      if (upload.state == TaskState.success) {
+        return await imgRef.getDownloadURL();
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 }

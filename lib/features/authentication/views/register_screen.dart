@@ -205,7 +205,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       label: "Email",
                       inputFormatter: [
                         FilteringTextInputFormatter.allow(
-                            RegExp(r'[a-zA-Z@._-]'))
+                            RegExp(r'[0-9a-zA-Z@._-]'))
                       ],
                       validator: (a) {
                         if (!emailRegex.hasMatch(a ?? "")) {
@@ -246,8 +246,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               return;
                             }
                             final a = await authProvider.register(
-                                email: emailController.text,
-                                password: passwordController.text);
+                              email: emailController.text,
+                              password: passwordController.text,
+                              name: nameController.text,
+                            );
                             if (a.error != null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text(a.error ?? "")));
