@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'features/home/view_models/chat_provider.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -27,9 +28,11 @@ class MyApp extends StatelessWidget {
     final firebaseService = FirebaseService();
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
+        ChangeNotifierProvider<AuthenticationProvider>(
             create: (_) =>
                 AuthenticationProvider(firebaseService: firebaseService)),
+        ChangeNotifierProvider<ChatProvider>(
+            create: (_) => ChatProvider(firebaseService: firebaseService)),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

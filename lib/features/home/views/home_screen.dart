@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              // Navigate to New Chat Screen
+              AppRouter.push(AppRouteStrings.createChatScreen);
             },
             backgroundColor: AppColors.appColor,
             child: Icon(Icons.chat, color: Colors.white),

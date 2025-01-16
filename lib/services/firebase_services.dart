@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:chatdem/features/home/models/chat_model.dart';
 import 'package:chatdem/features/home/models/user_model.dart';
 import 'package:chatdem/shared/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -73,6 +74,19 @@ class FirebaseService {
       return null;
     } catch (_) {
       return null;
+    }
+  }
+
+  Future<({ChatModel? model, String? error})> createChatModel(
+      ChatModel model) async {
+    try {
+      model =
+          model.copyWith(id: DateTime.now().microsecondsSinceEpoch.toString());
+
+      await fireStore.collection("chats").doc(model.id).set(model.toJson());
+      return (model: model, error: null);
+    } catch (e) {
+      return (model: null, error: e.toString());
     }
   }
 }

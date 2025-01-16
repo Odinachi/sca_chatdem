@@ -78,31 +78,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(
                         height: 50,
                       ),
-                      if (authProvider.loading)
-                        const Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.appColor),
-                          ),
-                        )
-                      else
-                        AppButton(
-                          text: "Login",
-                          action: () async {
-                            if (_formKey.currentState?.validate() ?? false) {
-                              final a = await authProvider.login(
-                                  email: emailController.text,
-                                  password: passwordController.text);
-                              if (a.error != null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(a.error ?? "")));
-                              } else {
-                                AppRouter.pushAndClear(
-                                    AppRouteStrings.homeScreen);
-                              }
+                      AppButton(
+                        loading: authProvider.loading,
+                        text: "Login",
+                        action: () async {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            final a = await authProvider.login(
+                                email: emailController.text,
+                                password: passwordController.text);
+                            if (a.error != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(a.error ?? "")));
+                            } else {
+                              AppRouter.pushAndClear(
+                                  AppRouteStrings.homeScreen);
                             }
-                          },
-                        ),
+                          }
+                        },
+                      ),
                       const SizedBox(
                         height: 20,
                       ),
