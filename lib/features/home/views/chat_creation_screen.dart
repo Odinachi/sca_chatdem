@@ -104,7 +104,7 @@ class _ChatCreationScreenState extends State<ChatCreationScreen> {
                                   chatName: chatNameController.text,
                                   img: imgs[Random().nextInt(imgs.length)]));
                           if (create.model != null) {
-                            AppRouter.push(AppRouteStrings.chatScreen,
+                            AppRouter.pushReplace(AppRouteStrings.chatScreen,
                                 arg: create.model);
                           } else {
                             AppRouter.message(create.error ?? "");

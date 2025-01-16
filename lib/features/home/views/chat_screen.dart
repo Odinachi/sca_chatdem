@@ -17,15 +17,14 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.appColor,
-        title: const Row(
+        title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: NetworkImage(
-                  "https://images.unsplash.com/photo-1734640113825-24dd7c056052?q=80&w=2835&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"),
+              backgroundImage: NetworkImage(widget.chatModel?.img ?? ""),
             ),
             SizedBox(width: 10),
             Text(
-              "Temu",
+              widget.chatModel?.chatName ?? "",
               style: TextStyle(color: Colors.white),
             ),
           ],
