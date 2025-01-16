@@ -28,6 +28,12 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ChatDem needs photos for your profile</string>
+	<key>NSCameraUsageDescription</key>
+	<string>ChatDem needs camera for your profile</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ChatDem needs microphone for your audio messaging in the future</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

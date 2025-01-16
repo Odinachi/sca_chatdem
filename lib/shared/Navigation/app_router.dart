@@ -2,6 +2,7 @@ import 'package:chatdem/features/authentication/views/login_screen.dart';
 import 'package:chatdem/features/authentication/views/register_screen.dart';
 import 'package:chatdem/features/home/views/chat_screen.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import '../../features/home/views/home_screen.dart';
 import 'app_route_strings.dart';
@@ -33,11 +34,16 @@ class AppRouter {
     navKey.currentState?.pushReplacementNamed(name, arguments: arg);
   }
 
-  static void pop(String name, {Object? arg}) {
+  static void pop({Object? arg}) {
     navKey.currentState?.pop(arg);
   }
 
   static void pushAndClear(String name, {Object? arg}) {
     navKey.currentState?.pushNamedAndRemoveUntil(name, (_) => false);
+  }
+
+  static void message(String msg, {bool? isSuccessful}) {
+    ScaffoldMessenger.of(navKey.currentContext!)
+        .showSnackBar(SnackBar(content: Text(msg)));
   }
 }

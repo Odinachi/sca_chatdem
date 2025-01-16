@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:chatdem/services/firebase_services.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -7,6 +9,13 @@ class AuthenticationProvider extends ChangeNotifier {
   AuthenticationProvider({required this.firebaseService});
 
   bool loading = false;
+
+  File? profileImage;
+
+  void setImage(File img) {
+    profileImage = img;
+    notifyListeners();
+  }
 
   Future<void> logout() async {
     await firebaseService.logout();

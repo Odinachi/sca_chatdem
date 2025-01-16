@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:chatdem/shared/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -75,4 +77,12 @@ final emailRegex = RegExp(
 
 extension CurrencyConverter on num? {
   String convertToNaira() => "₦${((this ?? 0) * 1650).toString()}";
+}
+
+extension FileExtension on File {
+  double checkSize() {
+    final bytes = readAsBytesSync().lengthInBytes;
+    final kb = bytes / 1024;
+    return kb / 1024;
+  }
 }
