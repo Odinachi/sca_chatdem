@@ -8,6 +8,10 @@ class AuthenticationProvider extends ChangeNotifier {
 
   bool loading = false;
 
+  Future<void> logout() async {
+    await firebaseService.logout();
+  }
+
   Future<({bool? loggedIn, String? error})> login(
       {required String email, required String password}) async {
     loading = true;

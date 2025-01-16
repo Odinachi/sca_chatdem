@@ -1,7 +1,9 @@
+import 'package:chatdem/features/authentication/view_models/authentication_provider.dart';
 import 'package:chatdem/shared/Navigation/app_route_strings.dart';
 import 'package:chatdem/shared/Navigation/app_router.dart';
 import 'package:chatdem/shared/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,52 +15,60 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: AppColors.appColor,
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Chats',
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // Search functionality
-            },
+    return Consumer<AuthenticationProvider>(
+      builder: (BuildContext context, AuthenticationProvider authProvider,
+          Widget? child) {
+        return Scaffold(
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: AppColors.appColor,
+            automaticallyImplyLeading: false,
+            title: Text(
+              'Chats',
+              style: TextStyle(color: Colors.white),
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(Icons.search, color: Colors.white),
+                onPressed: () {
+                  // Search functionality
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.exit_to_app, color: Colors.white),
+                onPressed: () {
+                  authProvider.logout().then((_) =>
+                      AppRouter.pushAndClear(AppRouteStrings.loginScreen));
+                },
+              ),
+            ],
           ),
-          IconButton(
-            icon: Icon(Icons.exit_to_app, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListView.builder(
-          itemCount: 10,
-          itemBuilder: (context, index) {
-            return ChatTile(
-              onTap: () {
-                AppRouter.push(AppRouteStrings.chatScreen);
+          body: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListView.builder(
+              itemCount: 10,
+              itemBuilder: (context, index) {
+                return ChatTile(
+                  onTap: () {
+                    AppRouter.push(AppRouteStrings.chatScreen);
+                  },
+                  name: 'User ${index + 1}',
+                  message: 'Hello! How are you doing?',
+                  time: '12:${10 + index} PM',
+                  avatarUrl: 'https://via.placeholder.com/150',
+                );
               },
-              name: 'User ${index + 1}',
-              message: 'Hello! How are you doing?',
-              time: '12:${10 + index} PM',
-              avatarUrl: 'https://via.placeholder.com/150',
-            );
-          },
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to New Chat Screen
-        },
-        backgroundColor: AppColors.appColor,
-        child: Icon(Icons.chat, color: Colors.white),
-      ),
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              // Navigate to New Chat Screen
+            },
+            backgroundColor: AppColors.appColor,
+            child: Icon(Icons.chat, color: Colors.white),
+          ),
+        );
+      },
     );
   }
 }

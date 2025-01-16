@@ -31,4 +31,10 @@ class FirebaseService {
       return (registered: null, error: e.toString());
     }
   }
+
+  Future<void> logout() async {
+    try {
+      await auth.signOut();
+    } catch (_) {}
+  }
 }
