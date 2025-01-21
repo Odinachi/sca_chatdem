@@ -6,6 +6,7 @@ import 'package:chatdem/shared/colors.dart';
 import 'package:chatdem/shared/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -76,13 +77,20 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemBuilder: (context, index) {
                                 final each = chatProvider.rooms[index];
                                 return ChatTile(
-                                  onTap: () {
-                                    AppRouter.push(AppRouteStrings.chatScreen,
-                                        arg: each);
+                                  onTap: () async {
+                                    await AppRouter.push(
+                                            AppRouteStrings.chatScreen,
+                                            arg: each)
+                                        .then((_) {
+                                      context.read<ChatProvider>().fetchRooms();
+                                    });
                                   },
                                   name: each.chatName ?? "",
-                                  message: 'Hello! How are you doing?',
-                                  time: '12:${10 + index} PM',
+                                  message: each.lastMsg ?? "No Message yet",
+                                  time: each.lastMsg == null
+                                      ? ""
+                                      : timeago.format(
+                                          each.lastMsgTime ?? DateTime.now()),
                                   avatarUrl: each.img ?? "",
                                 );
                               },

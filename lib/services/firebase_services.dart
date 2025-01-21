@@ -133,6 +133,11 @@ class FirebaseService {
           .doc(roomId)
           .collection("messages")
           .add(msgModel.toJson());
+
+      await fireStore.collection('chats').doc(roomId).set({
+        "lastMsg": msgModel.msg,
+        "lastMsgTime": DateTime.now().toIso8601String()
+      }, SetOptions(merge: true));
     } catch (_) {}
   }
 

@@ -49,7 +49,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     Expanded(
                       child: TextFormField(
                         validator: (a) =>
-                            (a ?? "").length < 3 ? "Inavlid message" : null,
+                            (a ?? "").length < 2 ? "Inavlid message" : null,
                         controller: msgController,
                         decoration: const InputDecoration(
                           hintText: 'Type a message...',
