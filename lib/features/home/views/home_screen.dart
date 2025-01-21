@@ -17,13 +17,17 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
-    context.read<ChatProvider>().fetchRooms();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ChatProvider>()
+        ..fetchRooms()
+        ..setUserModel(context.read<AuthenticationProvider>().userModel);
+    });
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    print(DateTime.now().toIso8601String());
     return Consumer<AuthenticationProvider>(
       builder: (BuildContext context, AuthenticationProvider authProvider,
           Widget? child) {
@@ -73,7 +77,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 final each = chatProvider.rooms[index];
                                 return ChatTile(
                                   onTap: () {
-                                    AppRouter.push(AppRouteStrings.chatScreen);
+                                    AppRouter.push(AppRouteStrings.chatScreen,
+                                        arg: each);
                                   },
                                   name: each.chatName ?? "",
                                   message: 'Hello! How are you doing?',

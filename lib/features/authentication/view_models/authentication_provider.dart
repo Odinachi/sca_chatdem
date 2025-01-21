@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chatdem/features/home/models/user_model.dart';
 import 'package:chatdem/services/firebase_services.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -10,10 +11,13 @@ class AuthenticationProvider extends ChangeNotifier {
 
   bool loading = false;
 
-  File? profileImage;
+  File? _profileImage;
+
+  File? get profileImage => _profileImage;
+  UserModel? userModel;
 
   void setImage(File img) {
-    profileImage = img;
+    _profileImage = img;
     notifyListeners();
   }
 
@@ -26,10 +30,10 @@ class AuthenticationProvider extends ChangeNotifier {
     loading = true;
     notifyListeners();
     final login = await firebaseService.login(email: email, password: password);
-    if (login.loggedIn ?? false) {
+    if (login.user != null) {
       loading = false;
+      userModel = login.user;
       notifyListeners();
-
       return (loggedIn: true, error: null);
     } else {
       loading = false;
@@ -50,7 +54,9 @@ class AuthenticationProvider extends ChangeNotifier {
       password: password,
       img: profileImage!,
     );
-    if (login.registered ?? false) {
+    if (login.user != null) {
+      userModel = login.user;
+
       loading = false;
       notifyListeners();
 

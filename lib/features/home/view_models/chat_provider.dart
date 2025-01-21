@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:chatdem/features/home/models/chat_model.dart';
+import 'package:chatdem/features/home/models/message_model.dart';
+import 'package:chatdem/features/home/models/user_model.dart';
 import 'package:chatdem/services/firebase_services.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -9,11 +11,18 @@ class ChatProvider extends ChangeNotifier {
 
   ChatProvider({required this.firebaseService});
 
+  UserModel? userModel;
+
   File? chatImg;
 
   bool isLoading = false;
 
   List<ChatModel> rooms = [];
+
+  void setUserModel(UserModel? model) async {
+    userModel = model;
+    userModel ??= await firebaseService.getUser();
+  }
 
   void setChatImg(File img) {
     chatImg = img;
@@ -45,5 +54,15 @@ class ChatProvider extends ChangeNotifier {
     }
     isLoading = false;
     notifyListeners();
+  }
+
+  void sendMsg({required String roomId, required String msg}) async {
+    await firebaseService.sendMessage(
+        roomId: roomId,
+        msgModel: MessageModel(
+            id: userModel?.uid,
+            name: userModel?.name,
+            time: DateTime.now(),
+            msg: msg));
   }
 }

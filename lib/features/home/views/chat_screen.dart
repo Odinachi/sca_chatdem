@@ -60,21 +60,21 @@ class _ChatScreenState extends State<ChatScreen> {
 
             // Text input area
             Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
-                border: Border(
-                  top: BorderSide(color: Colors.grey.shade300),
-                ),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.shade300),
               ),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.emoji_emotions, color: Colors.grey),
-                    onPressed: () {
-                      // Emoji functionality
-                    },
-                  ),
+                  // IconButton(
+                  //   icon: const Icon(Icons.emoji_emotions, color: Colors.grey),
+                  //   onPressed: () {
+                  //     // Emoji functionality
+                  //   },
+                  // ),
                   const Expanded(
                     child: TextField(
                       decoration: InputDecoration(

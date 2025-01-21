@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:chatdem/features/home/models/chat_model.dart';
+import 'package:chatdem/features/home/models/message_model.dart';
 import 'package:chatdem/features/home/models/user_model.dart';
 import 'package:chatdem/shared/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,20 +15,39 @@ class FirebaseService {
   final storage = FirebaseStorage.instance;
   final fireStore = FirebaseFirestore.instance;
 
-  Future<({bool? loggedIn, String? error})> login(
+  Future<({UserModel? user, String? error})> login(
       {required String email, required String password}) async {
     try {
       await auth.signInWithEmailAndPassword(email: email, password: password);
       await auth.currentUser?.reload();
-      return (loggedIn: true, error: null);
+      return (
+        user: await getUser(uid: auth.currentUser?.uid ?? ""),
+        error: null
+      );
     } on FirebaseAuthException catch (e) {
-      return (loggedIn: null, error: e.message);
+      return (user: null, error: e.message);
     } catch (e) {
-      return (loggedIn: null, error: e.toString());
+      return (user: null, error: e.toString());
     }
   }
 
-  Future<({bool? registered, String? error})> register(
+  Future<UserModel?> getUser({String? uid}) async {
+    try {
+      final get = await fireStore
+          .collection("users")
+          .doc(uid ?? auth.currentUser?.uid)
+          .get();
+
+      if (get.exists) {
+        return UserModel.fromJson(get.data()!);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<({UserModel? user, String? error})> register(
       {required String email,
       required String password,
       required String name,
@@ -38,7 +58,7 @@ class FirebaseService {
 
       await auth.currentUser?.reload();
 
-      await fireStore.collection("user").doc(auth.currentUser?.uid).set(
+      await fireStore.collection("users").doc(auth.currentUser?.uid).set(
             UserModel(
                     uid: auth.currentUser?.uid,
                     name: name,
@@ -46,11 +66,14 @@ class FirebaseService {
                 .toJson(),
           );
 
-      return (registered: true, error: null);
+      return (
+        user: await getUser(uid: auth.currentUser?.uid ?? ""),
+        error: null
+      );
     } on FirebaseAuthException catch (e) {
-      return (registered: null, error: e.message);
+      return (user: null, error: e.message);
     } catch (e) {
-      return (registered: null, error: e.toString());
+      return (user: null, error: e.toString());
     }
   }
 
@@ -100,5 +123,16 @@ class FirebaseService {
     } catch (_) {
       return [];
     }
+  }
+
+  Future<void> sendMessage(
+      {required String roomId, required MessageModel msgModel}) async {
+    try {
+      await fireStore
+          .collection("chats")
+          .doc(roomId)
+          .collection("messages")
+          .add(msgModel.toJson());
+    } catch (_) {}
   }
 }
