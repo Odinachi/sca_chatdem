@@ -4,6 +4,7 @@ import 'package:chatdem/features/home/models/chat_model.dart';
 import 'package:chatdem/features/home/models/message_model.dart';
 import 'package:chatdem/features/home/models/user_model.dart';
 import 'package:chatdem/services/firebase_services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 
 class ChatProvider extends ChangeNotifier {
@@ -63,6 +64,10 @@ class ChatProvider extends ChangeNotifier {
             id: userModel?.uid,
             name: userModel?.name,
             time: DateTime.now(),
+            image: userModel?.img,
             msg: msg));
   }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> getMsg(String roomId) =>
+      firebaseService.getMessgaes(roomId);
 }

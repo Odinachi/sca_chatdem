@@ -135,4 +135,12 @@ class FirebaseService {
           .add(msgModel.toJson());
     } catch (_) {}
   }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> getMessgaes(String roomId) {
+    return fireStore
+        .collection('chats')
+        .doc(roomId)
+        .collection("messages")
+        .snapshots();
+  }
 }
