@@ -16,6 +16,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final searchController = TextEditingController();
+
+  ValueNotifier<bool> showSearchValueListener = ValueNotifier(false);
+  ValueNotifier<bool> showClearValueListener = ValueNotifier(false);
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -32,84 +37,153 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer<AuthenticationProvider>(
       builder: (BuildContext context, AuthenticationProvider authProvider,
           Widget? child) {
-        return Consumer<ChatProvider>(
-          builder:
-              (BuildContext context, ChatProvider chatProvider, Widget? child) {
-            return Scaffold(
-              appBar: AppBar(
-                elevation: 0,
-                backgroundColor: AppColors.appColor,
-                automaticallyImplyLeading: false,
-                title: Text(
-                  'Chats',
-                  style: TextStyle(color: Colors.white),
-                ),
-                actions: [
-                  IconButton(
-                    icon: Icon(Icons.search, color: Colors.white),
-                    onPressed: () {
-                      // Search functionality
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                    onPressed: () {
-                      authProvider.logout().then((_) =>
-                          AppRouter.pushAndClear(AppRouteStrings.loginScreen));
-                    },
-                  ),
-                ],
-              ),
-              body: RefreshIndicator(
-                onRefresh: () async {
-                  chatProvider.fetchRooms();
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: chatProvider.isLoading
-                      ? loaderWidget()
-                      : chatProvider.rooms.isEmpty
-                          ? const Center(
-                              child: Text("Chat is Empty"),
-                            )
-                          : ListView.builder(
-                              itemCount: chatProvider.rooms.length,
-                              itemBuilder: (context, index) {
-                                final each = chatProvider.rooms[index];
-                                return ChatTile(
-                                  onTap: () async {
-                                    await AppRouter.push(
-                                            AppRouteStrings.chatScreen,
-                                            arg: each)
-                                        .then((_) {
-                                      context.read<ChatProvider>().fetchRooms();
-                                    });
-                                  },
-                                  name: each.chatName ?? "",
-                                  message: each.lastMsg ?? "No Message yet",
-                                  time: each.lastMsg == null
-                                      ? ""
-                                      : timeago.format(
-                                          each.lastMsgTime ?? DateTime.now()),
-                                  avatarUrl: each.img ?? "",
-                                );
+        return GestureDetector(
+          onTap: clearAndCloseSearch,
+          child: ValueListenableBuilder<bool>(
+            builder: (_, value, __) {
+              return Consumer<ChatProvider>(
+                builder: (BuildContext context, ChatProvider chatProvider,
+                    Widget? child) {
+                  return Scaffold(
+                    appBar: AppBar(
+                      elevation: 0,
+                      backgroundColor: AppColors.appColor,
+                      automaticallyImplyLeading: false,
+                      title: value
+                          ? TextFormField(
+                              controller: searchController,
+                              cursorColor: AppColors.appColor,
+                              onChanged: (a) {
+                                showClearValueListener.value = a.isNotEmpty;
                               },
+                              decoration: InputDecoration(
+                                hintText: "Search group",
+                                hintStyle: style.copyWith(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 13,
+                                ),
+                                suffixIcon: ValueListenableBuilder(
+                                    valueListenable: showClearValueListener,
+                                    builder: (_, showClearValue, __) {
+                                      if (showClearValue) {
+                                        return GestureDetector(
+                                            onTap: clearAndCloseSearch,
+                                            child: Icon(Icons.clear));
+                                      }
+                                      return SizedBox.shrink();
+                                    }),
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  color: AppColors.appColor,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                filled: true,
+                                fillColor: AppColors.white,
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.appColor),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.appColor),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.appColor),
+                                ),
+                              ),
+                            )
+                          : const Text(
+                              'Chats',
+                              style: TextStyle(color: Colors.white),
                             ),
-                ),
-              ),
-              floatingActionButton: FloatingActionButton(
-                onPressed: () async {
-                  await AppRouter.push(AppRouteStrings.createChatScreen)
-                      .then((_) => chatProvider.fetchRooms());
+                      actions: [
+                        if (!value)
+                          IconButton(
+                            icon: const Icon(Icons.search, color: Colors.white),
+                            onPressed: () {
+                              // Search functionality
+                              showSearchValueListener.value = true;
+                            },
+                          ),
+                        IconButton(
+                          icon: const Icon(Icons.exit_to_app,
+                              color: Colors.white),
+                          onPressed: () {
+                            authProvider.logout().then((_) =>
+                                AppRouter.pushAndClear(
+                                    AppRouteStrings.loginScreen));
+                          },
+                        ),
+                      ],
+                    ),
+                    body: RefreshIndicator(
+                      onRefresh: () async {
+                        chatProvider.fetchRooms();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: chatProvider.isLoading
+                            ? loaderWidget()
+                            : chatProvider.rooms.isEmpty
+                                ? const Center(
+                                    child: Text("Chat is Empty"),
+                                  )
+                                : ListView.builder(
+                                    itemCount: chatProvider.rooms.length,
+                                    itemBuilder: (context, index) {
+                                      final each = chatProvider.rooms[index];
+                                      return ChatTile(
+                                        onTap: () async {
+                                          await AppRouter.push(
+                                                  AppRouteStrings.chatScreen,
+                                                  arg: each)
+                                              .then((_) {
+                                            context
+                                                .read<ChatProvider>()
+                                                .fetchRooms();
+                                          });
+                                        },
+                                        name: each.chatName ?? "",
+                                        message:
+                                            each.lastMsg ?? "No Message yet",
+                                        time: each.lastMsg == null
+                                            ? ""
+                                            : timeago.format(each.lastMsgTime ??
+                                                DateTime.now()),
+                                        avatarUrl: each.img ?? "",
+                                      );
+                                    },
+                                  ),
+                      ),
+                    ),
+                    floatingActionButton: FloatingActionButton(
+                      onPressed: () async {
+                        await AppRouter.push(AppRouteStrings.createChatScreen)
+                            .then((_) => chatProvider.fetchRooms());
+                      },
+                      backgroundColor: AppColors.appColor,
+                      child: const Icon(Icons.chat, color: Colors.white),
+                    ),
+                  );
                 },
-                backgroundColor: AppColors.appColor,
-                child: const Icon(Icons.chat, color: Colors.white),
-              ),
-            );
-          },
+              );
+            },
+            valueListenable: showSearchValueListener,
+          ),
         );
       },
     );
+  }
+
+  void clearAndCloseSearch() {
+    searchController.clear();
+    showClearValueListener.value = false;
+    showSearchValueListener.value = false;
   }
 }
 
@@ -136,12 +210,12 @@ class ChatTile extends StatelessWidget {
       ),
       title: Text(
         name,
-        style: TextStyle(fontWeight: FontWeight.bold),
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       subtitle: Text(message),
       trailing: Text(
         time,
-        style: TextStyle(color: Colors.grey),
+        style: const TextStyle(color: Colors.grey),
       ),
       onTap: onTap,
     );
