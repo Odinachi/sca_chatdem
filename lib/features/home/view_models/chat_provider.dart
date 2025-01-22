@@ -19,6 +19,7 @@ class ChatProvider extends ChangeNotifier {
   bool isLoading = false;
 
   List<ChatModel> rooms = [];
+  List<ChatModel> searchedRooms = [];
 
   void setUserModel(UserModel? model) async {
     userModel = model;
@@ -66,6 +67,25 @@ class ChatProvider extends ChangeNotifier {
             time: DateTime.now(),
             image: userModel?.img,
             msg: msg));
+  }
+
+  void search(String text) {
+    final newRooms = List<ChatModel>.from(rooms);
+
+    newRooms.retainWhere((e) {
+      if ((e.chatName ?? "").toLowerCase().contains(text.toLowerCase())) {
+        return true;
+      }
+      return false;
+    });
+
+    searchedRooms = newRooms;
+    notifyListeners();
+  }
+
+  void clearSearch() {
+    searchedRooms.clear();
+    notifyListeners();
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getMsg(String roomId) =>

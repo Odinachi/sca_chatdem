@@ -40,21 +40,25 @@ class _HomeScreenState extends State<HomeScreen> {
         return GestureDetector(
           onTap: clearAndCloseSearch,
           child: ValueListenableBuilder<bool>(
-            builder: (_, value, __) {
+            builder: (_, showSearchValue, __) {
               return Consumer<ChatProvider>(
                 builder: (BuildContext context, ChatProvider chatProvider,
                     Widget? child) {
+                  final chatRoomList = showSearchValue
+                      ? chatProvider.searchedRooms
+                      : chatProvider.rooms;
                   return Scaffold(
                     appBar: AppBar(
                       elevation: 0,
                       backgroundColor: AppColors.appColor,
                       automaticallyImplyLeading: false,
-                      title: value
+                      title: showSearchValue
                           ? TextFormField(
                               controller: searchController,
                               cursorColor: AppColors.appColor,
                               onChanged: (a) {
                                 showClearValueListener.value = a.isNotEmpty;
+                                chatProvider.search(a);
                               },
                               decoration: InputDecoration(
                                 hintText: "Search group",
@@ -70,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             onTap: clearAndCloseSearch,
                                             child: Icon(Icons.clear));
                                       }
-                                      return SizedBox.shrink();
+                                      return const SizedBox.shrink();
                                     }),
                                 prefixIcon: const Icon(
                                   Icons.search,
@@ -102,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: TextStyle(color: Colors.white),
                             ),
                       actions: [
-                        if (!value)
+                        if (!showSearchValue)
                           IconButton(
                             icon: const Icon(Icons.search, color: Colors.white),
                             onPressed: () {
@@ -129,14 +133,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.all(8.0),
                         child: chatProvider.isLoading
                             ? loaderWidget()
-                            : chatProvider.rooms.isEmpty
+                            : chatRoomList.isEmpty
                                 ? const Center(
                                     child: Text("Chat is Empty"),
                                   )
                                 : ListView.builder(
-                                    itemCount: chatProvider.rooms.length,
+                                    itemCount: chatRoomList.length,
                                     itemBuilder: (context, index) {
-                                      final each = chatProvider.rooms[index];
+                                      final each = chatRoomList[index];
+
                                       return ChatTile(
                                         onTap: () async {
                                           await AppRouter.push(
@@ -184,6 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
     searchController.clear();
     showClearValueListener.value = false;
     showSearchValueListener.value = false;
+    context.read<ChatProvider>().clearSearch();
   }
 }
 
