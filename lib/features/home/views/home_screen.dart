@@ -216,9 +216,15 @@ class ChatTile extends StatelessWidget {
       ),
       title: Text(
         name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
-      subtitle: Text(message),
+      subtitle: Text(
+        message,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
       trailing: Text(
         time,
         style: const TextStyle(color: Colors.grey),

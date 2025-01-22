@@ -71,9 +71,9 @@ class ChatProvider extends ChangeNotifier {
 
   void search(String text) {
     final newRooms = List<ChatModel>.from(rooms);
-
     newRooms.retainWhere((e) {
-      if ((e.chatName ?? "").toLowerCase().contains(text.toLowerCase())) {
+      if ((e.chatName ?? "").toLowerCase().contains(text.toLowerCase()) ||
+          (e.lastMsg ?? "").toLowerCase().contains(text.toLowerCase())) {
         return true;
       }
       return false;
