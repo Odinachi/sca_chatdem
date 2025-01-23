@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../../../shared/network_connectivity.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -34,155 +36,176 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthenticationProvider>(
-      builder: (BuildContext context, AuthenticationProvider authProvider,
-          Widget? child) {
-        return GestureDetector(
-          onTap: clearAndCloseSearch,
-          child: ValueListenableBuilder<bool>(
-            builder: (_, showSearchValue, __) {
-              return Consumer<ChatProvider>(
-                builder: (BuildContext context, ChatProvider chatProvider,
-                    Widget? child) {
-                  final chatRoomList = showSearchValue
-                      ? chatProvider.searchedRooms
-                      : chatProvider.rooms;
-                  return Scaffold(
-                    appBar: AppBar(
-                      elevation: 0,
-                      backgroundColor: AppColors.appColor,
-                      automaticallyImplyLeading: false,
-                      title: showSearchValue
-                          ? TextFormField(
-                              controller: searchController,
-                              cursorColor: AppColors.appColor,
-                              onChanged: (a) {
-                                showClearValueListener.value = a.isNotEmpty;
-                                chatProvider.search(a);
-                              },
-                              decoration: InputDecoration(
-                                hintText: "Search group",
-                                hintStyle: style.copyWith(
-                                  color: Colors.grey.shade700,
-                                  fontSize: 13,
-                                ),
-                                suffixIcon: ValueListenableBuilder(
-                                    valueListenable: showClearValueListener,
-                                    builder: (_, showClearValue, __) {
-                                      if (showClearValue) {
-                                        return GestureDetector(
-                                            onTap: clearAndCloseSearch,
-                                            child: Icon(Icons.clear));
-                                      }
-                                      return const SizedBox.shrink();
-                                    }),
-                                prefixIcon: const Icon(
-                                  Icons.search,
-                                  color: AppColors.appColor,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 10),
-                                filled: true,
-                                fillColor: AppColors.white,
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide: const BorderSide(
-                                      color: AppColors.appColor),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide: const BorderSide(
-                                      color: AppColors.appColor),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide: const BorderSide(
-                                      color: AppColors.appColor),
-                                ),
-                              ),
-                            )
-                          : const Text(
-                              'Chats',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                      actions: [
-                        if (!showSearchValue)
-                          IconButton(
-                            icon: const Icon(Icons.search, color: Colors.white),
-                            onPressed: () {
-                              // Search functionality
-                              showSearchValueListener.value = true;
-                            },
-                          ),
-                        IconButton(
-                          icon: const Icon(Icons.exit_to_app,
-                              color: Colors.white),
-                          onPressed: () {
-                            authProvider.logout().then((_) =>
-                                AppRouter.pushAndClear(
-                                    AppRouteStrings.loginScreen));
-                          },
-                        ),
-                      ],
-                    ),
-                    body: RefreshIndicator(
-                      onRefresh: () async {
-                        chatProvider.fetchRooms();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: chatProvider.isLoading
-                            ? loaderWidget()
-                            : chatRoomList.isEmpty
-                                ? const Center(
-                                    child: Text("Chat is Empty"),
-                                  )
-                                : ListView.builder(
-                                    itemCount: chatRoomList.length,
-                                    itemBuilder: (context, index) {
-                                      final each = chatRoomList[index];
+    return ValueListenableBuilder(
+        valueListenable: NetworkConnectivity().networkListener,
+        builder: (_, hasNetwork, __) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Future.delayed(Duration(seconds: 3), () {
+              print("hasNetwork is $hasNetwork");
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(hasNetwork
+                      ? "Network has been restored"
+                      : "We lost network connection")));
+            });
+          });
 
-                                      return ChatTile(
-                                        onTap: () async {
-                                          await AppRouter.push(
-                                                  AppRouteStrings.chatScreen,
-                                                  arg: each)
-                                              .then((_) {
-                                            context
-                                                .read<ChatProvider>()
-                                                .fetchRooms();
-                                          });
-                                        },
-                                        name: each.chatName ?? "",
-                                        message:
-                                            each.lastMsg ?? "No Message yet",
-                                        time: each.lastMsg == null
-                                            ? ""
-                                            : timeago.format(each.lastMsgTime ??
-                                                DateTime.now()),
-                                        avatarUrl: each.img ?? "",
-                                      );
+          return Consumer<AuthenticationProvider>(
+            builder: (BuildContext context, AuthenticationProvider authProvider,
+                Widget? child) {
+              return GestureDetector(
+                onTap: clearAndCloseSearch,
+                child: ValueListenableBuilder<bool>(
+                  builder: (_, showSearchValue, __) {
+                    return Consumer<ChatProvider>(
+                      builder: (BuildContext context, ChatProvider chatProvider,
+                          Widget? child) {
+                        final chatRoomList = showSearchValue
+                            ? chatProvider.searchedRooms
+                            : chatProvider.rooms;
+                        return Scaffold(
+                          appBar: AppBar(
+                            elevation: 0,
+                            backgroundColor: AppColors.appColor,
+                            automaticallyImplyLeading: false,
+                            title: showSearchValue
+                                ? TextFormField(
+                                    controller: searchController,
+                                    cursorColor: AppColors.appColor,
+                                    onChanged: (a) {
+                                      showClearValueListener.value =
+                                          a.isNotEmpty;
+                                      chatProvider.search(a);
                                     },
+                                    decoration: InputDecoration(
+                                      hintText: "Search group",
+                                      hintStyle: style.copyWith(
+                                        color: Colors.grey.shade700,
+                                        fontSize: 13,
+                                      ),
+                                      suffixIcon: ValueListenableBuilder(
+                                          valueListenable:
+                                              showClearValueListener,
+                                          builder: (_, showClearValue, __) {
+                                            if (showClearValue) {
+                                              return GestureDetector(
+                                                  onTap: clearAndCloseSearch,
+                                                  child: Icon(Icons.clear));
+                                            }
+                                            return const SizedBox.shrink();
+                                          }),
+                                      prefixIcon: const Icon(
+                                        Icons.search,
+                                        color: AppColors.appColor,
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 10),
+                                      filled: true,
+                                      fillColor: AppColors.white,
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                        borderSide: const BorderSide(
+                                            color: AppColors.appColor),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                        borderSide: const BorderSide(
+                                            color: AppColors.appColor),
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                        borderSide: const BorderSide(
+                                            color: AppColors.appColor),
+                                      ),
+                                    ),
+                                  )
+                                : const Text(
+                                    'Chats',
+                                    style: TextStyle(color: Colors.white),
                                   ),
-                      ),
-                    ),
-                    floatingActionButton: FloatingActionButton(
-                      onPressed: () async {
-                        await AppRouter.push(AppRouteStrings.createChatScreen)
-                            .then((_) => chatProvider.fetchRooms());
+                            actions: [
+                              if (!showSearchValue)
+                                IconButton(
+                                  icon: const Icon(Icons.search,
+                                      color: Colors.white),
+                                  onPressed: () {
+                                    // Search functionality
+                                    showSearchValueListener.value = true;
+                                  },
+                                ),
+                              IconButton(
+                                icon: const Icon(Icons.exit_to_app,
+                                    color: Colors.white),
+                                onPressed: () {
+                                  authProvider.logout().then((_) =>
+                                      AppRouter.pushAndClear(
+                                          AppRouteStrings.loginScreen));
+                                },
+                              ),
+                            ],
+                          ),
+                          body: RefreshIndicator(
+                            onRefresh: () async {
+                              chatProvider.fetchRooms();
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: chatProvider.isLoading
+                                  ? loaderWidget()
+                                  : chatRoomList.isEmpty
+                                      ? const Center(
+                                          child: Text("Chat is Empty"),
+                                        )
+                                      : ListView.builder(
+                                          itemCount: chatRoomList.length,
+                                          itemBuilder: (context, index) {
+                                            final each = chatRoomList[index];
+
+                                            return ChatTile(
+                                              onTap: () async {
+                                                await AppRouter.push(
+                                                        AppRouteStrings
+                                                            .chatScreen,
+                                                        arg: each)
+                                                    .then((_) {
+                                                  context
+                                                      .read<ChatProvider>()
+                                                      .fetchRooms();
+                                                });
+                                              },
+                                              name: each.chatName ?? "",
+                                              message: each.lastMsg ??
+                                                  "No Message yet",
+                                              time: each.lastMsg == null
+                                                  ? ""
+                                                  : timeago.format(
+                                                      each.lastMsgTime ??
+                                                          DateTime.now()),
+                                              avatarUrl: each.img ?? "",
+                                            );
+                                          },
+                                        ),
+                            ),
+                          ),
+                          floatingActionButton: FloatingActionButton(
+                            onPressed: () async {
+                              await AppRouter.push(
+                                      AppRouteStrings.createChatScreen)
+                                  .then((_) => chatProvider.fetchRooms());
+                            },
+                            backgroundColor: AppColors.appColor,
+                            child: const Icon(Icons.chat, color: Colors.white),
+                          ),
+                        );
                       },
-                      backgroundColor: AppColors.appColor,
-                      child: const Icon(Icons.chat, color: Colors.white),
-                    ),
-                  );
-                },
+                    );
+                  },
+                  valueListenable: showSearchValueListener,
+                ),
               );
             },
-            valueListenable: showSearchValueListener,
-          ),
-        );
-      },
-    );
+          );
+        });
   }
 
   void clearAndCloseSearch() {
