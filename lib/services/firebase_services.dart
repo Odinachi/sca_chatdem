@@ -157,6 +157,7 @@ class FirebaseService {
               fromFirestore: (snapshot, _) =>
                   UserModel.fromJson(snapshot.data()!),
               toFirestore: (user, _) => user.toJson())
+          .where("uid", isNotEqualTo: auth.currentUser?.uid)
           .get();
 
       return (users: usersData.docs.map((e) => e.data()).toList(), error: null);

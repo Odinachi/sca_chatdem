@@ -60,13 +60,11 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void fetchUsers() async {
-    isLoading = true;
     notifyListeners();
     final allUsers = await firebaseService.getAllUsers();
     if (allUsers.users != null) {
       users = allUsers.users ?? [];
     }
-    isLoading = false;
     notifyListeners();
   }
 
