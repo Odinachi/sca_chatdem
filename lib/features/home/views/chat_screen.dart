@@ -90,6 +90,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                     roomId: widget.arg.chatModel?.id,
                                     msg: msgController.text,
                                     convoId: convoId,
+                                    recipientName: widget.arg.userModel?.name,
+                                    recipientImg: widget.arg.userModel?.img,
                                   );
                           if (sent == true) {
                             isNewUser = false;

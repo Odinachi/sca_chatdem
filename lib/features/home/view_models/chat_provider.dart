@@ -19,6 +19,7 @@ class ChatProvider extends ChangeNotifier {
   bool isLoading = false;
 
   List<ChatModel> rooms = [];
+  List<ChatModel> dms = [];
   List<UserModel> users = [];
   List<ChatModel> searchedRooms = [];
 
@@ -59,6 +60,17 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void fetchDms() async {
+    isLoading = true;
+    notifyListeners();
+    final chatRooms = await firebaseService.getDms();
+    if (chatRooms != null) {
+      dms = List.from(chatRooms);
+    }
+    isLoading = false;
+    notifyListeners();
+  }
+
   void fetchUsers() async {
     notifyListeners();
     final allUsers = await firebaseService.getAllUsers();
@@ -68,11 +80,18 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<dynamic> sendMsg(
-      {String? roomId, required String msg, String? convoId}) async {
+  Future<dynamic> sendMsg({
+    String? roomId,
+    required String msg,
+    String? convoId,
+    String? recipientName,
+    String? recipientImg,
+  }) async {
     return await firebaseService.sendMessage(
         roomId: roomId,
         convoId: convoId,
+        recipientName: recipientName,
+        recipientImg: recipientImg,
         msgModel: MessageModel(
             id: userModel?.uid,
             name: userModel?.name,

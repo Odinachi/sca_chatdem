@@ -1,4 +1,5 @@
 import 'package:chatdem/features/authentication/view_models/authentication_provider.dart';
+import 'package:chatdem/features/home/models/user_model.dart';
 import 'package:chatdem/features/home/view_models/chat_provider.dart';
 import 'package:chatdem/shared/Navigation/app_route_strings.dart';
 import 'package:chatdem/shared/Navigation/app_router.dart';
@@ -29,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ChatProvider>()
         ..fetchRooms()
+        ..fetchDms()
         ..fetchUsers()
         ..setUserModel(context.read<AuthenticationProvider>().userModel);
     });
@@ -65,6 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           final chatRoomList = showSearchValue
                               ? chatProvider.searchedRooms
                               : chatProvider.rooms;
+
+                          final dms = chatProvider.dms;
                           return Scaffold(
                             appBar: AppBar(
                               elevation: 0,
@@ -249,10 +253,59 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   child: Text("Chat is Empty"),
                                                 )
                                               : TabBarView(children: [
-                                                  const SizedBox(
-                                                    child: Center(
-                                                        child: Text("DMs")),
+                                                  //DM tab
+                                                  ListView.builder(
+                                                    itemCount: dms.length,
+                                                    itemBuilder:
+                                                        (context, index) {
+                                                      final each = dms[index];
+
+                                                      return ChatTile(
+                                                        onTap: () async {
+                                                          await AppRouter.push(
+                                                              AppRouteStrings
+                                                                  .chatScreen,
+                                                              arg:
+                                                                  ChatScreenArg(
+                                                                chatModel: each,
+                                                                isGroup: false,
+                                                                userModel:
+                                                                    UserModel(
+                                                                  img: each.img,
+                                                                  uid: each
+                                                                      .participants
+                                                                      ?.firstWhere((e) =>
+                                                                          e !=
+                                                                          chatProvider
+                                                                              .userModel
+                                                                              ?.uid),
+                                                                  name: each
+                                                                      .chatName,
+                                                                ),
+                                                              )).then((_) {
+                                                            context
+                                                                .read<
+                                                                    ChatProvider>()
+                                                                .fetchRooms();
+                                                          });
+                                                        },
+                                                        name:
+                                                            each.chatName ?? "",
+                                                        message: each.lastMsg ??
+                                                            "No Message yet",
+                                                        time: each.lastMsg ==
+                                                                null
+                                                            ? ""
+                                                            : timeago.format(
+                                                                each.lastMsgTime ??
+                                                                    DateTime
+                                                                        .now()),
+                                                        avatarUrl:
+                                                            each.img ?? "",
+                                                      );
+                                                    },
                                                   ),
+                                                  //Group Tab
                                                   ListView.builder(
                                                     itemCount:
                                                         chatRoomList.length,

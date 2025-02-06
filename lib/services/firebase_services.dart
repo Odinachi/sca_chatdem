@@ -116,7 +116,30 @@ class FirebaseService {
 
   Future<List<ChatModel>?> getChatRooms() async {
     try {
-      final getAllRooms = await fireStore.collection("chats").get();
+      final getAllRooms = await fireStore
+          .collection("chats")
+          .where(
+            "isGroup",
+            isEqualTo: true,
+          )
+          .get();
+
+      return List<ChatModel>.from(
+          getAllRooms.docs.map((e) => ChatModel.fromJson(e.data())));
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<List<ChatModel>?> getDms() async {
+    try {
+      final getAllRooms = await fireStore
+          .collection("chats")
+          .where(
+            "isGroup",
+            isEqualTo: false,
+          )
+          .get();
 
       return List<ChatModel>.from(
           getAllRooms.docs.map((e) => ChatModel.fromJson(e.data())));
@@ -128,6 +151,8 @@ class FirebaseService {
   Future<bool?> sendMessage({
     String? roomId,
     String? convoId,
+    String? recipientName,
+    String? recipientImg,
     required MessageModel msgModel,
   }) async {
     try {
@@ -140,6 +165,8 @@ class FirebaseService {
         "lastMsg": msgModel.msg,
         "lastMsgTime": DateTime.now().toIso8601String(),
         "isGroup": convoId == null,
+        if (convoId != null) "chatName": recipientName,
+        if (convoId != null) "img": recipientImg,
         "participants": convoId != null
             ? convoId.split("_").toList()
             : FieldValue.arrayUnion([auth.currentUser?.uid])
