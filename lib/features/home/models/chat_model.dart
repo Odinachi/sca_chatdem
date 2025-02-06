@@ -5,6 +5,8 @@ class ChatModel {
   final String? lastMsg;
   final DateTime? time;
   final DateTime? lastMsgTime;
+  final bool? isGroup;
+  final List<String>? participants;
 
   ChatModel(
       {this.chatName,
@@ -12,7 +14,9 @@ class ChatModel {
       this.img,
       this.time,
       this.lastMsg,
-      this.lastMsgTime});
+      this.lastMsgTime,
+      this.isGroup,
+      this.participants});
 
   ChatModel copyWith({
     String? chatName,
@@ -21,8 +25,12 @@ class ChatModel {
     String? lastMsg,
     DateTime? lastMsgTime,
     DateTime? time,
+    bool? isGroup,
+    List<String>? participants,
   }) =>
       ChatModel(
+        participants: participants ?? this.participants,
+        isGroup: isGroup ?? this.isGroup,
         chatName: chatName ?? this.chatName,
         id: id ?? this.id,
         img: img ?? this.img,
@@ -33,17 +41,27 @@ class ChatModel {
 
   factory ChatModel.fromJson(Map<String, dynamic> json) => ChatModel(
         chatName: json["chatName"],
+        isGroup: json["isGroup"],
         id: json["id"],
         img: json["img"],
         lastMsg: json["lastMsg"],
         time: json["time"] == null ? null : DateTime.parse(json["time"]),
         lastMsgTime: json["lastMsgTime"] == null
             ? null
-            : DateTime.parse(json["lastMsgTime"]),
+            : DateTime.parse(
+                json["lastMsgTime"],
+              ),
+        participants: json['participants'] == null
+            ? null
+            : (json['participants'] as List?)
+                ?.map((e) => e.toString())
+                .toList(),
       );
 
   Map<String, dynamic> toJson() => {
+        'participants': participants,
         "chatName": chatName,
+        "isGroup": isGroup,
         "id": id,
         "img": img,
         "lastMsg": lastMsg,
