@@ -31,16 +31,15 @@ class _ChatScreenState extends State<ChatScreen> {
       widget.arg.userModel?.uid,
       context.read<ChatProvider>().userModel?.uid
     ]..sort();
-    if (widget.arg.chatModel != null) convoId = uids.join("_");
+    if (widget.arg.userModel != null) {
+      convoId = uids.join("_");
+    }
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    List tester = [100, 20];
-
-    tester.sort();
-
     return Form(
       key: _formKey,
       child: Scaffold(

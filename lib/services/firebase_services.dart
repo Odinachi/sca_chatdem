@@ -138,7 +138,11 @@ class FirebaseService {
           .add(msgModel.toJson());
       await fireStore.collection('chats').doc(roomId ?? convoId).set({
         "lastMsg": msgModel.msg,
-        "lastMsgTime": DateTime.now().toIso8601String()
+        "lastMsgTime": DateTime.now().toIso8601String(),
+        "isGroup": convoId == null,
+        "participants": convoId != null
+            ? convoId.split("_").toList()
+            : FieldValue.arrayUnion([auth.currentUser?.uid])
       }, SetOptions(merge: true));
       return true;
     } catch (_) {
