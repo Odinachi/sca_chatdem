@@ -19,6 +19,7 @@ class ChatProvider extends ChangeNotifier {
   bool isLoading = false;
 
   List<ChatModel> rooms = [];
+  List<UserModel> users = [];
   List<ChatModel> searchedRooms = [];
 
   void setUserModel(UserModel? model) async {
@@ -53,6 +54,17 @@ class ChatProvider extends ChangeNotifier {
     final chatRooms = await firebaseService.getChatRooms();
     if (chatRooms != null) {
       rooms = List.from(chatRooms);
+    }
+    isLoading = false;
+    notifyListeners();
+  }
+
+  void fetchUsers() async {
+    isLoading = true;
+    notifyListeners();
+    final allUsers = await firebaseService.getAllUsers();
+    if (allUsers.users != null) {
+      users = allUsers.users ?? [];
     }
     isLoading = false;
     notifyListeners();

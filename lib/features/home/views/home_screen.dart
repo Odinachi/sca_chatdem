@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ChatProvider>()
         ..fetchRooms()
+        ..fetchUsers()
         ..setUserModel(context.read<AuthenticationProvider>().userModel);
     });
 
@@ -151,36 +152,40 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             body: Column(
                               children: [
-                                Container(
-                                  height: 80,
-                                  margin:
-                                      const EdgeInsets.only(top: 20, bottom: 5),
-                                  child: ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    itemBuilder: (_, i) {
-                                      return Container(
-                                        margin: EdgeInsets.only(
-                                          left: i == 0 ? 20 : 0,
-                                          right: 10,
-                                        ),
-                                        child: const Column(
-                                          children: [
-                                            Expanded(
-                                              child: CircleAvatar(
-                                                radius: 30,
+                                if (chatProvider.users.isNotEmpty)
+                                  Container(
+                                    height: 80,
+                                    margin: const EdgeInsets.only(
+                                        top: 20, bottom: 5),
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemBuilder: (_, i) {
+                                        final each = chatProvider.users[i];
+                                        return Container(
+                                          margin: EdgeInsets.only(
+                                            left: i == 0 ? 20 : 0,
+                                            right: 10,
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Expanded(
+                                                child: CircleAvatar(
+                                                  radius: 30,
+                                                  backgroundImage: NetworkImage(
+                                                      each.img ?? ""),
+                                                ),
                                               ),
-                                            ),
-                                            SizedBox(
-                                              height: 5,
-                                            ),
-                                            Text("First name"),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                    itemCount: 10,
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(each.name ?? ""),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      itemCount: chatProvider.users.length,
+                                    ),
                                   ),
-                                ),
                                 Container(
                                   margin: const EdgeInsets.only(
                                     top: 10,

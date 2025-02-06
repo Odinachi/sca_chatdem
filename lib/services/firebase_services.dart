@@ -148,4 +148,20 @@ class FirebaseService {
         .collection("messages")
         .snapshots();
   }
+
+  Future<({List<UserModel>? users, String? error})> getAllUsers() async {
+    try {
+      final usersData = await fireStore
+          .collection("users")
+          .withConverter(
+              fromFirestore: (snapshot, _) =>
+                  UserModel.fromJson(snapshot.data()!),
+              toFirestore: (user, _) => user.toJson())
+          .get();
+
+      return (users: usersData.docs.map((e) => e.data()).toList(), error: null);
+    } catch (e) {
+      return (users: null, error: e.toString());
+    }
+  }
 }
