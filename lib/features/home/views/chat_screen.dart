@@ -1,5 +1,6 @@
 import 'package:chatdem/features/home/models/chat_model.dart';
 import 'package:chatdem/features/home/models/message_model.dart';
+import 'package:chatdem/features/home/models/user_model.dart';
 import 'package:chatdem/features/home/view_models/chat_provider.dart';
 import 'package:chatdem/shared/colors.dart';
 import 'package:flutter/material.dart';
@@ -7,9 +8,9 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, this.chatModel});
+  const ChatScreen({super.key, required this.arg});
 
-  final ChatModel? chatModel;
+  final ChatScreenArg arg;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -19,6 +20,14 @@ class _ChatScreenState extends State<ChatScreen> {
   final msgController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+
+  bool isNewUser = false;
+
+  @override
+  void initState() {
+    isNewUser = widget.arg.isNewUser;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +77,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
                           context.read<ChatProvider>().sendMsg(
-                                roomId: widget.chatModel?.id ?? "",
+                                roomId: widget.arg.chatModel?.id ?? "",
                                 msg: msgController.text,
                               );
                           msgController.clear();
@@ -86,71 +95,84 @@ class _ChatScreenState extends State<ChatScreen> {
           title: Row(
             children: [
               CircleAvatar(
-                backgroundImage: NetworkImage(widget.chatModel?.img ?? ""),
+                backgroundImage: NetworkImage(
+                    (widget.arg.chatModel?.img ?? widget.arg.userModel?.img) ??
+                        ""),
               ),
               const SizedBox(width: 10),
               Text(
-                widget.chatModel?.chatName ?? "",
+                (widget.arg.chatModel?.chatName ??
+                        widget.arg.userModel?.name) ??
+                    "",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: Colors.white),
               ),
             ],
           ),
         ),
         body: SafeArea(
-          child: Column(
-            children: [
-              StreamBuilder(
-                  stream: context
-                      .read<ChatProvider>()
-                      .getMsg(widget.chatModel?.id ?? ""),
-                  builder: (_, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const SizedBox(
-                          height: 200,
-                          child: Center(child: CircularProgressIndicator()));
-                    } else if (snapshot.hasError) {
-                      return const SizedBox(
-                          height: 200,
-                          child: Center(
-                              child: Text("Can not fetch messages now")));
-                    } else if ((snapshot.data?.size ?? 0) < 1) {
-                      return const SizedBox(
-                          height: 200,
-                          child: Center(child: Text("No messages yet")));
-                    }
-                    final listOfMessages = snapshot.data?.docs ?? [];
+          child: (isNewUser)
+              ? Center(child: Text("Start a Conversation"))
+              : Column(
+                  children: [
+                    StreamBuilder(
+                        stream: context
+                            .read<ChatProvider>()
+                            .getMsg(widget.arg.chatModel?.id ?? ""),
+                        builder: (_, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const SizedBox(
+                                height: 200,
+                                child:
+                                    Center(child: CircularProgressIndicator()));
+                          } else if (snapshot.hasError) {
+                            return const SizedBox(
+                                height: 200,
+                                child: Center(
+                                    child: Text("Can not fetch messages now")));
+                          } else if ((snapshot.data?.size ?? 0) < 1) {
+                            return const SizedBox(
+                                height: 200,
+                                child: Center(child: Text("No messages yet")));
+                          }
+                          final listOfMessages = snapshot.data?.docs ?? [];
 
-                    final msgs = List<MessageModel>.from(listOfMessages
-                        .map((e) => MessageModel.fromJson(e.data())));
+                          final msgs = List<MessageModel>.from(listOfMessages
+                              .map((e) => MessageModel.fromJson(e.data())));
 
-                    msgs.sort((a, b) => (b.time ?? DateTime.now())
-                        .compareTo(a.time ?? DateTime.now()));
+                          msgs.sort((a, b) => (b.time ?? DateTime.now())
+                              .compareTo(a.time ?? DateTime.now()));
 
-                    return Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 110),
-                        reverse: true,
-                        itemBuilder: (_, i) {
-                          final each = msgs[i];
-                          return ChatBubble(
-                            name: each.name ?? "",
-                            image: each.image ?? "",
-                            isMe: each.id ==
-                                context.read<ChatProvider>().userModel?.uid,
-                            message: each.msg ?? "",
-                            time: DateFormat("hh:mm a")
-                                .format(each.time ?? DateTime.now()),
+                          return Expanded(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.only(bottom: 110),
+                              reverse: true,
+                              itemBuilder: (_, i) {
+                                final each = msgs[i];
+                                return ChatBubble(
+                                  name: each.name ?? "",
+                                  image: each.image ?? "",
+                                  isMe: each.id ==
+                                      context
+                                          .read<ChatProvider>()
+                                          .userModel
+                                          ?.uid,
+                                  message: each.msg ?? "",
+                                  time: DateFormat("hh:mm a")
+                                      .format(each.time ?? DateTime.now()),
+                                );
+                              },
+                              shrinkWrap: true,
+                              itemCount: msgs.length,
+                            ),
                           );
-                        },
-                        shrinkWrap: true,
-                        itemCount: msgs.length,
-                      ),
-                    );
-                  }),
+                        }),
 
-              // Text input area
-            ],
-          ),
+                    // Text input area
+                  ],
+                ),
         ),
       ),
     );
@@ -245,4 +267,17 @@ class ChatBubble extends StatelessWidget {
       ),
     );
   }
+}
+
+class ChatScreenArg {
+  final ChatModel? chatModel;
+  final UserModel? userModel;
+  final bool isGroup;
+  final bool isNewUser;
+
+  ChatScreenArg(
+      {this.chatModel,
+      this.isGroup = true,
+      this.userModel,
+      this.isNewUser = false});
 }

@@ -1,6 +1,5 @@
 import 'package:chatdem/features/authentication/views/login_screen.dart';
 import 'package:chatdem/features/authentication/views/register_screen.dart';
-import 'package:chatdem/features/home/models/chat_model.dart';
 import 'package:chatdem/features/home/views/chat_creation_screen.dart';
 import 'package:chatdem/features/home/views/chat_screen.dart';
 import 'package:flutter/cupertino.dart';
@@ -23,7 +22,7 @@ class AppRouter {
       case AppRouteStrings.chatScreen:
         return CupertinoPageRoute(
             builder: (_) => ChatScreen(
-                  chatModel: settings.arguments as ChatModel?,
+                  arg: settings.arguments as ChatScreenArg,
                 ));
       case AppRouteStrings.createChatScreen:
         return CupertinoPageRoute(builder: (_) => const ChatCreationScreen());
@@ -33,8 +32,8 @@ class AppRouter {
     }
   }
 
-  static Future<void> push(String name, {Object? arg}) async {
-    await navKey.currentState?.pushNamed(name, arguments: arg);
+  static Future<dynamic> push(String name, {Object? arg}) async {
+    return await navKey.currentState?.pushNamed(name, arguments: arg);
   }
 
   static void pushReplace(String name, {Object? arg}) {

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../shared/colors.dart';
+import 'chat_screen.dart';
 
 class ChatCreationScreen extends StatefulWidget {
   const ChatCreationScreen({super.key});
@@ -105,7 +106,10 @@ class _ChatCreationScreenState extends State<ChatCreationScreen> {
                                   img: imgs[Random().nextInt(imgs.length)]));
                           if (create.model != null) {
                             AppRouter.pushReplace(AppRouteStrings.chatScreen,
-                                arg: create.model);
+                                arg: ChatScreenArg(
+                                  chatModel: create.model,
+                                  isGroup: true,
+                                ));
                           } else {
                             AppRouter.message(create.error ?? "");
                           }

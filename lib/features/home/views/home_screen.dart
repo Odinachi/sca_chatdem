@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../shared/network_connectivity.dart';
+import 'chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -44,10 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (_, hasNetwork, __) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               Future.delayed(const Duration(seconds: 3), () {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(hasNetwork
-                        ? "Network has been restored"
-                        : "We lost network connection")));
+                // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                //     content: Text(hasNetwork
+                //         ? "Network has been restored"
+                //         : "We lost network connection")));
               });
             });
 
@@ -161,25 +162,41 @@ class _HomeScreenState extends State<HomeScreen> {
                                       scrollDirection: Axis.horizontal,
                                       itemBuilder: (_, i) {
                                         final each = chatProvider.users[i];
-                                        return Container(
-                                          margin: EdgeInsets.only(
-                                            left: i == 0 ? 20 : 0,
-                                            right: 10,
-                                          ),
-                                          child: Column(
-                                            children: [
-                                              Expanded(
-                                                child: CircleAvatar(
-                                                  radius: 30,
-                                                  backgroundImage: NetworkImage(
-                                                      each.img ?? ""),
+                                        return GestureDetector(
+                                          onTap: () async {
+                                            final messaged =
+                                                await AppRouter.push(
+                                                    AppRouteStrings.chatScreen,
+                                                    arg: ChatScreenArg(
+                                                      userModel: each,
+                                                      isGroup: true,
+                                                      isNewUser: true,
+                                                    ));
+
+                                            print(
+                                                "message was sent ${messaged}");
+                                          },
+                                          child: Container(
+                                            margin: EdgeInsets.only(
+                                              left: i == 0 ? 20 : 0,
+                                              right: 10,
+                                            ),
+                                            child: Column(
+                                              children: [
+                                                Expanded(
+                                                  child: CircleAvatar(
+                                                    radius: 30,
+                                                    backgroundImage:
+                                                        NetworkImage(
+                                                            each.img ?? ""),
+                                                  ),
                                                 ),
-                                              ),
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-                                              Text(each.name ?? ""),
-                                            ],
+                                                SizedBox(
+                                                  height: 5,
+                                                ),
+                                                Text(each.name ?? ""),
+                                              ],
+                                            ),
                                           ),
                                         );
                                       },
@@ -250,10 +267,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       return ChatTile(
                                                         onTap: () async {
                                                           await AppRouter.push(
-                                                                  AppRouteStrings
-                                                                      .chatScreen,
-                                                                  arg: each)
-                                                              .then((_) {
+                                                              AppRouteStrings
+                                                                  .chatScreen,
+                                                              arg:
+                                                                  ChatScreenArg(
+                                                                chatModel: each,
+                                                                isGroup: true,
+                                                              )).then((_) {
                                                             context
                                                                 .read<
                                                                     ChatProvider>()
