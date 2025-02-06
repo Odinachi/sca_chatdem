@@ -22,15 +22,25 @@ class _ChatScreenState extends State<ChatScreen> {
   final _formKey = GlobalKey<FormState>();
 
   bool isNewUser = false;
+  String? convoId;
 
   @override
   void initState() {
     isNewUser = widget.arg.isNewUser;
+    final uids = [
+      widget.arg.userModel?.uid,
+      context.read<ChatProvider>().userModel?.uid
+    ]..sort();
+    if (widget.arg.chatModel != null) convoId = uids.join("_");
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    List tester = [100, 20];
+
+    tester.sort();
+
     return Form(
       key: _formKey,
       child: Scaffold(
@@ -74,12 +84,18 @@ class _ChatScreenState extends State<ChatScreen> {
                     // ),
                     IconButton(
                       icon: const Icon(Icons.send, color: AppColors.appColor),
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState?.validate() ?? false) {
-                          context.read<ChatProvider>().sendMsg(
-                                roomId: widget.arg.chatModel?.id ?? "",
-                                msg: msgController.text,
-                              );
+                          final sent =
+                              await context.read<ChatProvider>().sendMsg(
+                                    roomId: widget.arg.chatModel?.id,
+                                    msg: msgController.text,
+                                    convoId: convoId,
+                                  );
+                          if (sent == true) {
+                            isNewUser = false;
+                            setState(() {});
+                          }
                           msgController.clear();
                         }
                       },
@@ -113,13 +129,12 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         body: SafeArea(
           child: (isNewUser)
-              ? Center(child: Text("Start a Conversation"))
+              ? const Center(child: Text("Start a Conversation"))
               : Column(
                   children: [
                     StreamBuilder(
-                        stream: context
-                            .read<ChatProvider>()
-                            .getMsg(widget.arg.chatModel?.id ?? ""),
+                        stream: context.read<ChatProvider>().getMsg(
+                            (widget.arg.chatModel?.id ?? convoId ?? "")),
                         builder: (_, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -187,7 +202,8 @@ class ChatBubble extends StatelessWidget {
   final String name;
 
   const ChatBubble(
-      {required this.isMe,
+      {super.key,
+      required this.isMe,
       required this.message,
       required this.time,
       required this.image,

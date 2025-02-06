@@ -125,20 +125,25 @@ class FirebaseService {
     }
   }
 
-  Future<void> sendMessage(
-      {required String roomId, required MessageModel msgModel}) async {
+  Future<bool?> sendMessage({
+    String? roomId,
+    String? convoId,
+    required MessageModel msgModel,
+  }) async {
     try {
       await fireStore
           .collection("chats")
-          .doc(roomId)
+          .doc(roomId ?? convoId)
           .collection("messages")
           .add(msgModel.toJson());
-
-      await fireStore.collection('chats').doc(roomId).set({
+      await fireStore.collection('chats').doc(roomId ?? convoId).set({
         "lastMsg": msgModel.msg,
         "lastMsgTime": DateTime.now().toIso8601String()
       }, SetOptions(merge: true));
-    } catch (_) {}
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getMessgaes(String roomId) {

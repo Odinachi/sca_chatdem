@@ -172,9 +172,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       isGroup: true,
                                                       isNewUser: true,
                                                     ));
-
-                                            print(
-                                                "message was sent ${messaged}");
                                           },
                                           child: Container(
                                             margin: EdgeInsets.only(

@@ -68,9 +68,11 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void sendMsg({required String roomId, required String msg}) async {
-    await firebaseService.sendMessage(
+  Future<dynamic> sendMsg(
+      {String? roomId, required String msg, String? convoId}) async {
+    return await firebaseService.sendMessage(
         roomId: roomId,
+        convoId: convoId,
         msgModel: MessageModel(
             id: userModel?.uid,
             name: userModel?.name,
