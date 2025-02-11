@@ -255,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               : TabBarView(children: [
                                                   //DM tab
                                                   dms.isEmpty
-                                                      ? Center(
+                                                      ? const Center(
                                                           child: Text(
                                                               "No Chat yet"),
                                                         )
@@ -265,6 +265,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               (context, index) {
                                                             final each =
                                                                 dms[index];
+                                                            final otherUser = each
+                                                                .users
+                                                                ?.where((e) =>
+                                                                    e.uid !=
+                                                                    context
+                                                                        .read<
+                                                                            ChatProvider>()
+                                                                        .userModel
+                                                                        ?.uid)
+                                                                .firstOrNull;
 
                                                             return ChatTile(
                                                               onTap: () async {
@@ -275,6 +285,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                         ChatScreenArg(
                                                                       chatModel:
                                                                           each,
+                                                                      isNewUser:
+                                                                          each.lastMsg ==
+                                                                              null,
                                                                       isGroup:
                                                                           false,
                                                                       userModel:
@@ -294,9 +307,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                       .fetchRooms();
                                                                 });
                                                               },
-                                                              name:
-                                                                  each.chatName ??
-                                                                      "",
+                                                              name: otherUser
+                                                                      ?.name ??
+                                                                  "",
                                                               message: each
                                                                       .lastMsg ??
                                                                   "No Message yet",
@@ -307,9 +320,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                           .lastMsgTime ??
                                                                       DateTime
                                                                           .now()),
-                                                              avatarUrl:
-                                                                  each.img ??
-                                                                      "",
+                                                              avatarUrl: otherUser
+                                                                      ?.img ??
+                                                                  "",
                                                             );
                                                           },
                                                         ),

@@ -38,6 +38,8 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
   }
 
+  List<MessageModel> msgs = [];
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -89,7 +91,9 @@ class _ChatScreenState extends State<ChatScreen> {
                               await context.read<ChatProvider>().sendMsg(
                                     roomId: widget.arg.chatModel?.id,
                                     msg: msgController.text,
+                                    isNewMsg: msgs.isEmpty,
                                     convoId: convoId,
+                                    otherUserId: widget.arg.userModel?.uid,
                                     recipientName: widget.arg.userModel?.name,
                                     recipientImg: widget.arg.userModel?.img,
                                   );
@@ -155,7 +159,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           }
                           final listOfMessages = snapshot.data?.docs ?? [];
 
-                          final msgs = List<MessageModel>.from(listOfMessages
+                          msgs = List<MessageModel>.from(listOfMessages
                               .map((e) => MessageModel.fromJson(e.data())));
 
                           msgs.sort((a, b) => (b.time ?? DateTime.now())

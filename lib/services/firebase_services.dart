@@ -149,13 +149,14 @@ class FirebaseService {
     }
   }
 
-  Future<bool?> sendMessage({
-    String? roomId,
-    String? convoId,
-    String? recipientName,
-    String? recipientImg,
-    required MessageModel msgModel,
-  }) async {
+  Future<bool?> sendMessage(
+      {String? roomId,
+      String? convoId,
+      String? recipientName,
+      String? recipientImg,
+      required bool isNewMsg,
+      required MessageModel msgModel,
+      List<UserModel>? users}) async {
     try {
       await fireStore
           .collection("chats")
@@ -165,13 +166,23 @@ class FirebaseService {
       await fireStore.collection('chats').doc(roomId ?? convoId).set({
         "lastMsg": msgModel.msg,
         "lastMsgTime": DateTime.now().toIso8601String(),
-        "isGroup": convoId == null,
-        if (convoId != null) "chatName": recipientName,
-        if (convoId != null) "img": recipientImg,
-        "participants": convoId != null
-            ? convoId.split("_").toList()
-            : FieldValue.arrayUnion([auth.currentUser?.uid])
+        if (isNewMsg) "isGroup": convoId == null,
+        if (convoId != null && isNewMsg) "chatName": recipientName,
+        if (convoId != null && isNewMsg) "img": recipientImg,
+        if (isNewMsg)
+          "users": users
+              ?.map((e) => {
+                    "name": e.name,
+                    "img": e.img,
+                    "uid": e.uid,
+                  })
+              .toList(),
+        if (isNewMsg)
+          "participants": convoId != null
+              ? convoId.split("_").toList()
+              : FieldValue.arrayUnion([auth.currentUser?.uid])
       }, SetOptions(merge: true));
+
       return true;
     } catch (_) {
       return false;

@@ -86,10 +86,21 @@ class ChatProvider extends ChangeNotifier {
     String? convoId,
     String? recipientName,
     String? recipientImg,
+    required bool isNewMsg,
+    String? otherUserId,
   }) async {
     return await firebaseService.sendMessage(
         roomId: roomId,
         convoId: convoId,
+        users: [
+          userModel!,
+          UserModel(
+            name: recipientName,
+            img: recipientImg,
+            uid: otherUserId,
+          )
+        ],
+        isNewMsg: isNewMsg,
         recipientName: recipientName,
         recipientImg: recipientImg,
         msgModel: MessageModel(
