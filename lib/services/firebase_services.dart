@@ -139,7 +139,8 @@ class FirebaseService {
             "isGroup",
             isEqualTo: false,
           )
-          .get();
+          .where("participants",
+              arrayContainsAny: [auth.currentUser?.uid]).get();
 
       return List<ChatModel>.from(
           getAllRooms.docs.map((e) => ChatModel.fromJson(e.data())));

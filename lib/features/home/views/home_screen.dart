@@ -254,57 +254,65 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 )
                                               : TabBarView(children: [
                                                   //DM tab
-                                                  ListView.builder(
-                                                    itemCount: dms.length,
-                                                    itemBuilder:
-                                                        (context, index) {
-                                                      final each = dms[index];
+                                                  dms.isEmpty
+                                                      ? Center(
+                                                          child: Text(
+                                                              "No Chat yet"),
+                                                        )
+                                                      : ListView.builder(
+                                                          itemCount: dms.length,
+                                                          itemBuilder:
+                                                              (context, index) {
+                                                            final each =
+                                                                dms[index];
 
-                                                      return ChatTile(
-                                                        onTap: () async {
-                                                          await AppRouter.push(
-                                                              AppRouteStrings
-                                                                  .chatScreen,
-                                                              arg:
-                                                                  ChatScreenArg(
-                                                                chatModel: each,
-                                                                isGroup: false,
-                                                                userModel:
-                                                                    UserModel(
-                                                                  img: each.img,
-                                                                  uid: each
-                                                                      .participants
-                                                                      ?.firstWhere((e) =>
-                                                                          e !=
-                                                                          chatProvider
-                                                                              .userModel
-                                                                              ?.uid),
-                                                                  name: each
-                                                                      .chatName,
-                                                                ),
-                                                              )).then((_) {
-                                                            context
-                                                                .read<
-                                                                    ChatProvider>()
-                                                                .fetchRooms();
-                                                          });
-                                                        },
-                                                        name:
-                                                            each.chatName ?? "",
-                                                        message: each.lastMsg ??
-                                                            "No Message yet",
-                                                        time: each.lastMsg ==
-                                                                null
-                                                            ? ""
-                                                            : timeago.format(
-                                                                each.lastMsgTime ??
-                                                                    DateTime
-                                                                        .now()),
-                                                        avatarUrl:
-                                                            each.img ?? "",
-                                                      );
-                                                    },
-                                                  ),
+                                                            return ChatTile(
+                                                              onTap: () async {
+                                                                await AppRouter.push(
+                                                                    AppRouteStrings
+                                                                        .chatScreen,
+                                                                    arg:
+                                                                        ChatScreenArg(
+                                                                      chatModel:
+                                                                          each,
+                                                                      isGroup:
+                                                                          false,
+                                                                      userModel:
+                                                                          UserModel(
+                                                                        img: each
+                                                                            .img,
+                                                                        uid: each.participants?.firstWhere((e) =>
+                                                                            e !=
+                                                                            chatProvider.userModel?.uid),
+                                                                        name: each
+                                                                            .chatName,
+                                                                      ),
+                                                                    )).then((_) {
+                                                                  context
+                                                                      .read<
+                                                                          ChatProvider>()
+                                                                      .fetchRooms();
+                                                                });
+                                                              },
+                                                              name:
+                                                                  each.chatName ??
+                                                                      "",
+                                                              message: each
+                                                                      .lastMsg ??
+                                                                  "No Message yet",
+                                                              time: each.lastMsg ==
+                                                                      null
+                                                                  ? ""
+                                                                  : timeago.format(each
+                                                                          .lastMsgTime ??
+                                                                      DateTime
+                                                                          .now()),
+                                                              avatarUrl:
+                                                                  each.img ??
+                                                                      "",
+                                                            );
+                                                          },
+                                                        ),
                                                   //Group Tab
                                                   ListView.builder(
                                                     itemCount:
