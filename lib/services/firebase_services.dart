@@ -197,6 +197,10 @@ class FirebaseService {
         .snapshots();
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>> listenToMsgs() {
+    return fireStore.collection('chats').snapshots();
+  }
+
   Future<({List<UserModel>? users, String? error})> getAllUsers() async {
     try {
       final usersData = await fireStore

@@ -132,4 +132,7 @@ class ChatProvider extends ChangeNotifier {
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getMsg(String roomId) =>
       firebaseService.getMessgaes(roomId);
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> listenToMsgs() =>
+      firebaseService.listenToMsgs();
 }

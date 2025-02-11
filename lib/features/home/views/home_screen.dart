@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chatdem/features/authentication/view_models/authentication_provider.dart';
 import 'package:chatdem/features/home/models/user_model.dart';
 import 'package:chatdem/features/home/view_models/chat_provider.dart';
@@ -24,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   ValueNotifier<bool> showSearchValueListener = ValueNotifier(false);
   ValueNotifier<bool> showClearValueListener = ValueNotifier(false);
+  StreamSubscription? listenToMsgStream;
 
   @override
   void initState() {
@@ -34,8 +37,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ..fetchUsers()
         ..setUserModel(context.read<AuthenticationProvider>().userModel);
     });
+    listenToMsgStream = context.read<ChatProvider>().listenToMsgs().listen((e) {
+      if (context.mounted) {
+        context.read<ChatProvider>()
+          ..fetchDms()
+          ..fetchUsers();
+      }
+    });
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    listenToMsgStream?.cancel();
+    super.dispose();
   }
 
   @override
