@@ -135,4 +135,8 @@ class ChatProvider extends ChangeNotifier {
 
   Stream<QuerySnapshot<Map<String, dynamic>>> listenToMsgs() =>
       firebaseService.listenToMsgs();
+
+  void updateSeen({String? msgId, String? chatId}) async {
+    await firebaseService.updateSeen(msgId: msgId, chatId: chatId);
+  }
 }

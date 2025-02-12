@@ -159,8 +159,9 @@ class _ChatScreenState extends State<ChatScreen> {
                           }
                           final listOfMessages = snapshot.data?.docs ?? [];
 
-                          msgs = List<MessageModel>.from(listOfMessages
-                              .map((e) => MessageModel.fromJson(e.data())));
+                          msgs = List<MessageModel>.from(listOfMessages.map(
+                              (e) => MessageModel.fromJson(e.data())
+                                  .copyWith(msgId: e.id)));
 
                           msgs.sort((a, b) => (b.time ?? DateTime.now())
                               .compareTo(a.time ?? DateTime.now()));
@@ -171,7 +172,22 @@ class _ChatScreenState extends State<ChatScreen> {
                               reverse: true,
                               itemBuilder: (_, i) {
                                 final each = msgs[i];
+                                if ((each.seen?.length ?? 0) < 2 &&
+                                    each.id !=
+                                        context
+                                            .read<ChatProvider>()
+                                            .userModel
+                                            ?.uid) {
+                                  context.read<ChatProvider>().updateSeen(
+                                      msgId: each.msgId, chatId: convoId);
+                                }
                                 return ChatBubble(
+                                  seen: (each.seen?.length ?? 0) > 1,
+                                  received: each.id ==
+                                      context
+                                          .read<ChatProvider>()
+                                          .userModel
+                                          ?.uid,
                                   name: each.name ?? "",
                                   image: each.image ?? "",
                                   isMe: each.id ==
@@ -205,14 +221,19 @@ class ChatBubble extends StatelessWidget {
   final String time;
   final String image;
   final String name;
+  final bool seen;
+  final bool received;
 
-  const ChatBubble(
-      {super.key,
-      required this.isMe,
-      required this.message,
-      required this.time,
-      required this.image,
-      required this.name});
+  const ChatBubble({
+    super.key,
+    required this.isMe,
+    required this.message,
+    required this.time,
+    required this.image,
+    required this.name,
+    this.seen = false,
+    this.received = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -274,7 +295,19 @@ class ChatBubble extends StatelessWidget {
                   fontSize: 10,
                   color: isMe ? AppColors.appColor : Colors.black,
                 ),
-              )
+              ),
+              if (isMe && seen)
+                const Icon(
+                  Icons.done_all,
+                  size: 15,
+                  color: AppColors.grey,
+                )
+              else if (isMe && received)
+                const Icon(
+                  Icons.done,
+                  size: 15,
+                  color: AppColors.grey,
+                ),
             ],
           ),
           if (isMe)

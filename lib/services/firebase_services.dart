@@ -158,11 +158,12 @@ class FirebaseService {
       required MessageModel msgModel,
       List<UserModel>? users}) async {
     try {
+      final model = msgModel.copyWith(seen: [auth.currentUser?.uid ?? ""]);
       await fireStore
           .collection("chats")
           .doc(roomId ?? convoId)
           .collection("messages")
-          .add(msgModel.toJson());
+          .add(model.toJson());
       await fireStore.collection('chats').doc(roomId ?? convoId).set({
         "lastMsg": msgModel.msg,
         "lastMsgTime": DateTime.now().toIso8601String(),
@@ -216,5 +217,35 @@ class FirebaseService {
     } catch (e) {
       return (users: null, error: e.toString());
     }
+  }
+
+  Future<void> updateSeen({String? msgId, String? chatId}) async {
+    await fireStore
+        .collection("chats")
+        .doc(chatId)
+        .collection("messages")
+        .doc(msgId)
+        .set({
+      "seen": FieldValue.arrayUnion([auth.currentUser?.uid])
+    }, SetOptions(merge: true));
+    // await fireStore.collection('chats').doc(roomId ?? convoId).set({
+    //   "lastMsg": msgModel.msg,
+    //   "lastMsgTime": DateTime.now().toIso8601String(),
+    //   if (isNewMsg) "isGroup": convoId == null,
+    //   if (convoId != null && isNewMsg) "chatName": recipientName,
+    //   if (convoId != null && isNewMsg) "img": recipientImg,
+    //   if (isNewMsg)
+    //     "users": users
+    //         ?.map((e) => {
+    //       "name": e.name,
+    //       "img": e.img,
+    //       "uid": e.uid,
+    //     })
+    //         .toList(),
+    //   if (isNewMsg)
+    //     "participants": convoId != null
+    //         ? convoId.split("_").toList()
+    //         : FieldValue.arrayUnion([auth.currentUser?.uid])
+    // }, SetOptions(merge: true));
   }
 }

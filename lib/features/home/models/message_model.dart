@@ -1,9 +1,11 @@
 class MessageModel {
   final String? name;
+  final String? msgId;
   final String? id;
   final String? msg;
   final String? image;
   final DateTime? time;
+  final List<String>? seen;
 
   MessageModel({
     this.name,
@@ -11,6 +13,8 @@ class MessageModel {
     this.msg,
     this.image,
     this.time,
+    this.seen,
+    this.msgId,
   });
 
   MessageModel copyWith({
@@ -18,7 +22,9 @@ class MessageModel {
     String? id,
     String? msg,
     String? image,
+    String? msgId,
     DateTime? time,
+    List<String>? seen,
   }) =>
       MessageModel(
         name: name ?? this.name,
@@ -26,14 +32,23 @@ class MessageModel {
         msg: msg ?? this.msg,
         image: image ?? this.image,
         time: time ?? this.time,
+        seen: seen ?? this.seen,
+        msgId: msgId ?? this.msgId,
       );
 
   factory MessageModel.fromJson(Map<String, dynamic> json) => MessageModel(
+        seen: json['seen'] == null
+            ? null
+            : (json['seen'] as List?)?.map((e) => e.toString()).toList(),
         name: json["name"],
         id: json["id"],
         msg: json["msg"],
         image: json["image"],
-        time: json["time"] == null ? null : DateTime.parse(json["time"]),
+        time: json["time"] == null
+            ? null
+            : DateTime.parse(
+                json["time"],
+              ),
       );
 
   Map<String, dynamic> toJson() => {
@@ -41,6 +56,7 @@ class MessageModel {
         "id": id,
         "msg": msg,
         "image": image,
+        "seen": seen,
         "time": time?.toIso8601String(),
       };
 }
