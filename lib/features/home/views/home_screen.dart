@@ -7,6 +7,7 @@ import 'package:chatdem/shared/Navigation/app_route_strings.dart';
 import 'package:chatdem/shared/Navigation/app_router.dart';
 import 'package:chatdem/shared/colors.dart';
 import 'package:chatdem/shared/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -27,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ValueNotifier<bool> showSearchValueListener = ValueNotifier(false);
   ValueNotifier<bool> showClearValueListener = ValueNotifier(false);
   StreamSubscription? listenToMsgStream;
+  StreamSubscription? newExistingMessage;
 
   @override
   void initState() {
@@ -38,11 +40,20 @@ class _HomeScreenState extends State<HomeScreen> {
         ..setUserModel(context.read<AuthenticationProvider>().userModel);
     });
     listenToMsgStream = context.read<ChatProvider>().listenToMsgs().listen((e) {
-      if (context.mounted) {
-        context.read<ChatProvider>()
-          ..fetchDms()
-          ..fetchUsers();
-      }
+      e.docs.forEach((e) {
+        newExistingMessage = FirebaseFirestore.instance
+            .collection("chats")
+            .doc(e.id)
+            .collection("messages")
+            .snapshots()
+            .listen((e) {
+          if (context.mounted) {
+            context.read<ChatProvider>()
+              ..fetchDms()
+              ..fetchUsers();
+          }
+        });
+      });
     });
 
     super.initState();
@@ -51,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     listenToMsgStream?.cancel();
+    newExistingMessage?.cancel();
     super.dispose();
   }
 
@@ -146,9 +158,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ),
                                     )
-                                  : const Text(
-                                      'Chats',
-                                      style: TextStyle(color: Colors.white),
+                                  : Text(
+                                      context
+                                              .read<ChatProvider>()
+                                              .userModel
+                                              ?.name ??
+                                          "",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                               actions: [
                                 if (!showSearchValue)
