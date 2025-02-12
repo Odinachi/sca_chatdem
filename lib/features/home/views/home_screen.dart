@@ -60,7 +60,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 MessageModel.fromJson(e.data()).copyWith(msgId: e.id);
 
             //we are checking if we are the recipients of the message and also checking if this message has previously been seen.
-            if (incomingMsg.id != context.read<ChatProvider>().userModel?.uid &&
+            if (incomingMsg.id !=
+                    context
+                        .read<ChatProvider>()
+                        .firebaseService
+                        .auth
+                        .currentUser
+                        ?.uid &&
                 (incomingMsg.seen?.length ?? 0) < 2) {
               //we are getting the current state of our unread map
               final newMap = unreadNotifier.value;
