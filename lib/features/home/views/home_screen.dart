@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:chatdem/features/authentication/view_models/authentication_provider.dart';
+import 'package:chatdem/features/home/models/message_model.dart';
 import 'package:chatdem/features/home/models/user_model.dart';
 import 'package:chatdem/features/home/view_models/chat_provider.dart';
 import 'package:chatdem/shared/Navigation/app_route_strings.dart';
@@ -30,6 +31,8 @@ class _HomeScreenState extends State<HomeScreen> {
   StreamSubscription? listenToMsgStream;
   StreamSubscription? newExistingMessage;
 
+  final unreadNotifier = ValueNotifier(<String, List<String>>{});
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -40,13 +43,39 @@ class _HomeScreenState extends State<HomeScreen> {
         ..setUserModel(context.read<AuthenticationProvider>().userModel);
     });
     listenToMsgStream = context.read<ChatProvider>().listenToMsgs().listen((e) {
-      e.docs.forEach((e) {
+      //This is getting every new chat created
+      e.docs.forEach((outter) {
         newExistingMessage = FirebaseFirestore.instance
             .collection("chats")
-            .doc(e.id)
+            .doc(outter.id)
             .collection("messages")
             .snapshots()
-            .listen((e) {
+            .listen((inner) {
+          //We are streaming the messages inside each of those chats to see the ones not yet read.
+          inner.docs.forEach((e) {
+            //sterializing the message object to a model
+            final incomingMsg =
+                MessageModel.fromJson(e.data()).copyWith(msgId: e.id);
+
+            //we are checking if we are the recipients of the message and also checking if this message has previously been seen.
+            if (incomingMsg.id != context.read<ChatProvider>().userModel?.uid &&
+                (incomingMsg.seen?.length ?? 0) < 2) {
+              //we are getting the current state of our unread map
+              final newMap = unreadNotifier.value;
+
+              //we are checking we have previously unread message on the chat using the id
+              if (newMap[outter.id] == null) {
+                newMap[outter.id] = [incomingMsg.msgId ?? ""];
+              } else {
+                //add one to the existing unread count
+                newMap[outter.id]?.add(incomingMsg.msgId ?? "");
+
+                newMap[outter.id] = newMap[outter.id]?.toSet().toList() ?? [];
+              }
+              //force our ui to update using the updated value
+              unreadNotifier.value = newMap;
+            }
+          });
           if (context.mounted) {
             context.read<ChatProvider>()
               ..fetchDms()
@@ -311,54 +340,56 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                         ?.uid)
                                                                 .firstOrNull;
 
-                                                            return ChatTile(
-                                                              onTap: () async {
-                                                                await AppRouter.push(
-                                                                    AppRouteStrings
-                                                                        .chatScreen,
-                                                                    arg:
-                                                                        ChatScreenArg(
-                                                                      chatModel:
-                                                                          each,
-                                                                      isNewUser:
-                                                                          each.lastMsg ==
-                                                                              null,
-                                                                      isGroup:
-                                                                          false,
-                                                                      userModel:
-                                                                          UserModel(
-                                                                        img: each
-                                                                            .img,
-                                                                        uid: each.participants?.firstWhere((e) =>
-                                                                            e !=
-                                                                            chatProvider.userModel?.uid),
-                                                                        name: each
-                                                                            .chatName,
-                                                                      ),
-                                                                    )).then((_) {
-                                                                  context
-                                                                      .read<
-                                                                          ChatProvider>()
-                                                                      .fetchRooms();
+                                                            return ValueListenableBuilder(
+                                                                valueListenable:
+                                                                    unreadNotifier,
+                                                                builder: (_,
+                                                                    value, __) {
+                                                                  return ChatTile(
+                                                                    unreadCount:
+                                                                        value[each.convoId]?.length ??
+                                                                            0,
+                                                                    onTap:
+                                                                        () async {
+                                                                      await AppRouter.push(
+                                                                          AppRouteStrings
+                                                                              .chatScreen,
+                                                                          arg:
+                                                                              ChatScreenArg(
+                                                                            chatModel:
+                                                                                each,
+                                                                            isNewUser:
+                                                                                each.lastMsg == null,
+                                                                            isGroup:
+                                                                                false,
+                                                                            userModel:
+                                                                                UserModel(
+                                                                              img: each.img,
+                                                                              uid: each.participants?.firstWhere((e) => e != chatProvider.userModel?.uid),
+                                                                              name: each.chatName,
+                                                                            ),
+                                                                          )).then((_) {
+                                                                        context
+                                                                            .read<ChatProvider>()
+                                                                            .fetchRooms();
+                                                                      });
+                                                                    },
+                                                                    name: otherUser
+                                                                            ?.name ??
+                                                                        "",
+                                                                    message: each
+                                                                            .lastMsg ??
+                                                                        "No Message yet",
+                                                                    time: each.lastMsg ==
+                                                                            null
+                                                                        ? ""
+                                                                        : timeago.format(each.lastMsgTime ??
+                                                                            DateTime.now()),
+                                                                    avatarUrl:
+                                                                        otherUser?.img ??
+                                                                            "",
+                                                                  );
                                                                 });
-                                                              },
-                                                              name: otherUser
-                                                                      ?.name ??
-                                                                  "",
-                                                              message: each
-                                                                      .lastMsg ??
-                                                                  "No Message yet",
-                                                              time: each.lastMsg ==
-                                                                      null
-                                                                  ? ""
-                                                                  : timeago.format(each
-                                                                          .lastMsgTime ??
-                                                                      DateTime
-                                                                          .now()),
-                                                              avatarUrl: otherUser
-                                                                      ?.img ??
-                                                                  "",
-                                                            );
                                                           },
                                                         ),
                                                   //Group Tab
@@ -445,6 +476,7 @@ class ChatTile extends StatelessWidget {
   final String time;
   final String avatarUrl;
   final VoidCallback? onTap;
+  final int unreadCount;
 
   const ChatTile(
       {super.key,
@@ -452,7 +484,8 @@ class ChatTile extends StatelessWidget {
       required this.message,
       required this.time,
       required this.avatarUrl,
-      this.onTap});
+      this.onTap,
+      this.unreadCount = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -471,9 +504,33 @@ class ChatTile extends StatelessWidget {
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: Text(
-        time,
-        style: const TextStyle(color: Colors.grey),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            time,
+            style: const TextStyle(color: Colors.grey),
+          ),
+          if (unreadCount > 0)
+            Container(
+              margin: const EdgeInsets.only(
+                left: 10,
+              ),
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: AppColors.appColor,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                unreadCount.toString(),
+                style: style.copyWith(
+                  fontSize: 12,
+                  color: AppColors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            )
+        ],
       ),
       onTap: onTap,
     );

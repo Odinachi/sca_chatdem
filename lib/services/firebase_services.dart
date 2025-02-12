@@ -142,8 +142,8 @@ class FirebaseService {
           .where("participants",
               arrayContainsAny: [auth.currentUser?.uid]).get();
 
-      return List<ChatModel>.from(
-          getAllRooms.docs.map((e) => ChatModel.fromJson(e.data())));
+      return List<ChatModel>.from(getAllRooms.docs
+          .map((e) => ChatModel.fromJson(e.data()).copyWith(convoId: e.id)));
     } catch (_) {
       return [];
     }

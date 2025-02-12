@@ -5,6 +5,7 @@ class ChatModel {
   final String? id;
   final String? img;
   final String? lastMsg;
+  final String? convoId;
   final DateTime? time;
   final DateTime? lastMsgTime;
   final bool? isGroup;
@@ -20,7 +21,8 @@ class ChatModel {
       this.lastMsgTime,
       this.isGroup,
       this.participants,
-      this.users});
+      this.users,
+      this.convoId});
 
   ChatModel copyWith({
     String? chatName,
@@ -31,6 +33,7 @@ class ChatModel {
     DateTime? time,
     bool? isGroup,
     List<String>? participants,
+    String? convoId,
   }) =>
       ChatModel(
         participants: participants ?? this.participants,
@@ -42,6 +45,7 @@ class ChatModel {
         lastMsg: lastMsg ?? this.lastMsg,
         lastMsgTime: lastMsgTime ?? this.lastMsgTime,
         users: users,
+        convoId: convoId ?? this.convoId,
       );
 
   factory ChatModel.fromJson(Map<String, dynamic> json) => ChatModel(
