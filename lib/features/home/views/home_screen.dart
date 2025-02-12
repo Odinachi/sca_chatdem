@@ -51,6 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
             .collection("messages")
             .snapshots()
             .listen((inner) {
+          //clears the unread count and start all over for accurate data.
+          unreadNotifier.value.clear();
           //We are streaming the messages inside each of those chats to see the ones not yet read.
           inner.docs.forEach((e) {
             //sterializing the message object to a model
