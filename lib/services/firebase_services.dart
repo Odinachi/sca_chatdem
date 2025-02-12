@@ -159,13 +159,21 @@ class FirebaseService {
       List<UserModel>? users}) async {
     try {
       final model = msgModel.copyWith(seen: [auth.currentUser?.uid ?? ""]);
+
+      String? lastMsgId;
       await fireStore
           .collection("chats")
           .doc(roomId ?? convoId)
           .collection("messages")
-          .add(model.toJson());
+          .add(model.toJson())
+          .then((e) {
+        lastMsgId = e.id;
+      });
       await fireStore.collection('chats').doc(roomId ?? convoId).set({
         "lastMsg": msgModel.msg,
+        "lastMsgId": lastMsgId,
+        "lastSenderId": auth.currentUser?.uid,
+        "seen": [auth.currentUser?.uid],
         "lastMsgTime": DateTime.now().toIso8601String(),
         if (isNewMsg) "isGroup": convoId == null,
         if (convoId != null && isNewMsg) "chatName": recipientName,
@@ -220,6 +228,7 @@ class FirebaseService {
   }
 
   Future<void> updateSeen({String? msgId, String? chatId}) async {
+    //adding the current user's id to the message seen
     await fireStore
         .collection("chats")
         .doc(chatId)
@@ -228,24 +237,16 @@ class FirebaseService {
         .set({
       "seen": FieldValue.arrayUnion([auth.currentUser?.uid])
     }, SetOptions(merge: true));
-    // await fireStore.collection('chats').doc(roomId ?? convoId).set({
-    //   "lastMsg": msgModel.msg,
-    //   "lastMsgTime": DateTime.now().toIso8601String(),
-    //   if (isNewMsg) "isGroup": convoId == null,
-    //   if (convoId != null && isNewMsg) "chatName": recipientName,
-    //   if (convoId != null && isNewMsg) "img": recipientImg,
-    //   if (isNewMsg)
-    //     "users": users
-    //         ?.map((e) => {
-    //       "name": e.name,
-    //       "img": e.img,
-    //       "uid": e.uid,
-    //     })
-    //         .toList(),
-    //   if (isNewMsg)
-    //     "participants": convoId != null
-    //         ? convoId.split("_").toList()
-    //         : FieldValue.arrayUnion([auth.currentUser?.uid])
-    // }, SetOptions(merge: true));
+
+    final lastMsgDoc = await fireStore.collection("chats").doc(chatId).get();
+
+    //if this message was the last sent message then add the user's add as well.
+
+    if (lastMsgDoc.data()?["lastMsgId"] == msgId &&
+        ((lastMsgDoc.data()?["seen"] as List?) ?? []).length < 2) {
+      await fireStore.collection('chats').doc(chatId).set({
+        "seen": FieldValue.arrayUnion([auth.currentUser?.uid]),
+      }, SetOptions(merge: true));
+    }
   }
 }

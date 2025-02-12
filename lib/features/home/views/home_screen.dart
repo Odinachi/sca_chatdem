@@ -201,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               .userModel
                                               ?.name ??
                                           "",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -264,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             each.img ?? ""),
                                                   ),
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   height: 5,
                                                 ),
                                                 Text(each.name ?? ""),
@@ -347,6 +347,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                         .userModel
                                                                         ?.uid)
                                                                 .firstOrNull;
+                                                            final myUid = context
+                                                                .read<
+                                                                    ChatProvider>()
+                                                                .firebaseService
+                                                                .auth
+                                                                .currentUser
+                                                                ?.uid;
 
                                                             return ValueListenableBuilder(
                                                                 valueListenable:
@@ -354,6 +361,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                 builder: (_,
                                                                     value, __) {
                                                                   return ChatTile(
+                                                                    lastMsgRead: each.senderId !=
+                                                                            myUid
+                                                                        ? null
+                                                                        : (each.seen?.length ??
+                                                                                0) >
+                                                                            1,
                                                                     unreadCount:
                                                                         value[each.convoId]?.length ??
                                                                             0,
@@ -486,6 +499,9 @@ class ChatTile extends StatelessWidget {
   final VoidCallback? onTap;
   final int unreadCount;
 
+  //null for incoming messages, true for read messages and false for unread messages
+  final bool? lastMsgRead;
+
   const ChatTile(
       {super.key,
       required this.name,
@@ -493,7 +509,8 @@ class ChatTile extends StatelessWidget {
       required this.time,
       required this.avatarUrl,
       this.onTap,
-      this.unreadCount = 0});
+      this.unreadCount = 0,
+      this.lastMsgRead});
 
   @override
   Widget build(BuildContext context) {
@@ -525,7 +542,7 @@ class ChatTile extends StatelessWidget {
                 left: 10,
               ),
               padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.appColor,
                 shape: BoxShape.circle,
               ),
@@ -536,6 +553,24 @@ class ChatTile extends StatelessWidget {
                   color: AppColors.white,
                   fontWeight: FontWeight.w600,
                 ),
+              ),
+            )
+          else if (lastMsgRead == true)
+            const Padding(
+              padding: EdgeInsets.only(left: 10),
+              child: Icon(
+                Icons.done_all,
+                size: 15,
+                color: AppColors.grey,
+              ),
+            )
+          else if (lastMsgRead == false)
+            const Padding(
+              padding: EdgeInsets.only(left: 10),
+              child: Icon(
+                Icons.done,
+                size: 15,
+                color: AppColors.grey,
               ),
             )
         ],

@@ -5,24 +5,29 @@ class ChatModel {
   final String? id;
   final String? img;
   final String? lastMsg;
+  final String? senderId;
   final String? convoId;
   final DateTime? time;
   final DateTime? lastMsgTime;
   final bool? isGroup;
   final List<String>? participants;
+  final List<String>? seen;
   final List<UserModel>? users;
 
-  ChatModel(
-      {this.chatName,
-      this.id,
-      this.img,
-      this.time,
-      this.lastMsg,
-      this.lastMsgTime,
-      this.isGroup,
-      this.participants,
-      this.users,
-      this.convoId});
+  ChatModel({
+    this.chatName,
+    this.id,
+    this.img,
+    this.time,
+    this.lastMsg,
+    this.lastMsgTime,
+    this.isGroup,
+    this.participants,
+    this.users,
+    this.convoId,
+    this.seen,
+    this.senderId,
+  });
 
   ChatModel copyWith({
     String? chatName,
@@ -46,10 +51,13 @@ class ChatModel {
         lastMsgTime: lastMsgTime ?? this.lastMsgTime,
         users: users,
         convoId: convoId ?? this.convoId,
+        seen: seen,
+        senderId: senderId,
       );
 
   factory ChatModel.fromJson(Map<String, dynamic> json) => ChatModel(
       chatName: json["chatName"],
+      senderId: json["lastSenderId"],
       isGroup: json["isGroup"],
       id: json["id"],
       img: json["img"],
@@ -63,12 +71,17 @@ class ChatModel {
       participants: json['participants'] == null
           ? null
           : (json['participants'] as List?)?.map((e) => e.toString()).toList(),
+      seen: json['seen'] == null
+          ? null
+          : (json['seen'] as List?)?.map((e) => e.toString()).toList(),
       users: json["users"] == null
           ? null
           : (json['users'] as List).map((e) => UserModel.fromJson(e)).toList());
 
   Map<String, dynamic> toJson() => {
         'participants': participants,
+        'seen': seen,
+        "lastSenderId": senderId,
         "chatName": chatName,
         "isGroup": isGroup,
         "id": id,
